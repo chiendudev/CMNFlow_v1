@@ -7,7 +7,9 @@ from src.core.settings import Settings
 from src.trading.orders import Order, OCOOrder
 from src.trading.enums import OrderSide, PositionSide
 from src.trading.portfolio import Position
-
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.trading.portfolio import Position
 logger = logging.getLogger(__name__)
 
 @dataclass
@@ -44,7 +46,18 @@ class KlineEvent(Event):
             raise ValueError("open_time must be less than close_time")
         if any(v < 0 for v in [self.open, self.high, self.low, self.close, self.volume]):
             raise ValueError("Price and volume must be non-negative")
+@dataclass(kw_only=True)
+class OrderBookSnapshot(Event):
+    bids: List[tuple[float, float]]
+    asks: List[tuple[float, float]]
+    snapshot_time: int
 
+    def __post_init__(self):
+        super().__post_init__()
+        if not (self.bids and self.asks):
+            raise ValueError("Bids and asks cannot be empty")
+        if self.snapshot_time <= 0:
+            raise ValueError("Invalid snapshot_time")
 @dataclass(kw_only=True)
 class OrderBookEvent(Event):
     bids: List[tuple[float, float]]

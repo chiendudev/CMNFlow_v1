@@ -1,6 +1,6 @@
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from typing import List
-from trading.enums import KlineIntervals
+from src.trading.enums import KlineIntervals
 
 class Settings(BaseSettings):
     symbols: List[str] = ["BTCUSDT"]
@@ -34,9 +34,16 @@ class Settings(BaseSettings):
     db_path: str = "data/trading.db"
     data_retention_days: int = 30
     cache_size: int = 1000
-    max_margin_ratio: float = 0.80  # 80%
+    max_margin_ratio: float = 0.80
     correlation_threshold: float = 0.80
     volatility_threshold: float = 0.02
+    enabled_events: List[str] = [
+        "kline", "order_book", "order_book_snapshot", "funding_rate", "mark_price", "signal",
+        "order", "risk", "trade", "liquidation", "position"
+    ]
+    log_level: str = "INFO"
+    log_directory: str = "logs"
+    log_rotation_size: int = 10 * 1024 * 1024  # 10MB
 
     class Config:
         env_file = ".env"

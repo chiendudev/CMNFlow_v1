@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-from typing import List, Optional
-from trading.enums import OrderSide, PositionSide, OrderType, OrderStatus
-import asyncio
+from typing import List
+from old.trading.enums import OrderSide, PositionSide, OrderStatus
 import logging
 
 logger = logging.getLogger(__name__)

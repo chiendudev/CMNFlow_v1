@@ -3,7 +3,7 @@ from typing import List
 from dotenv import load_dotenv
 import os
 import json
-from trading.enums import TradeMode
+from old.trading.enums import TradeMode
 
 load_dotenv()
 

@@ -6,7 +6,7 @@ import hashlib
 import urllib.parse
 from typing import Optional, Dict, Any
 from aiolimiter import AsyncLimiter
-from exchange.rest_api.base_model_symbol_info import ContractInfo
+
 
 class RetryRequest(Exception):
     pass

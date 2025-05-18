@@ -1,8 +1,8 @@
 # technical.py
 from typing import List, Dict, Tuple, Optional
-from config.settings import Settings
-from analysis.zones import ZoneAnalyzer
-from analysis.signals import SignalGenerator
+from old.config.settings import Settings
+from old.analysis.zones import ZoneAnalyzer
+from old.analysis.signals import SignalGenerator
 import logging
 import numpy as np
 import talib

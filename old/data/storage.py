@@ -1,9 +1,8 @@
 from typing import List, Dict
-from config.settings import Settings
+from old.config.settings import Settings
 from collections import deque
 import json
 import logging
-import asyncio
 import time
 
 logger = logging.getLogger(__name__)

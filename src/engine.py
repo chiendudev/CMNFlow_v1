@@ -11,8 +11,6 @@ from src.exchange.websocket import WebSocketClient
 from src.exchange.kline_manager import KlineManager
 from src.strategy.signals import SignalGenerator
 from src.trading.portfolio import Portfolio
-from src.trading.orders import Order
-from trading.enums import OrderSide, PositionSide, OrderStatus
 
 logger = logging.getLogger(__name__)
 

@@ -1,11 +1,11 @@
 from typing import List, Dict
-from config.settings import Settings
-from data.kline import Kline
-from exchange.rest_api.market import MarketRestAPI
-from indicators.technical import TechnicalIndicators
-from trading.portfolio import PortfolioManager
-from trading.enums import OrderSide, PositionSide, OrderStatus, TradeMode, KlineIntervals
-from trading.orders import NewOrder
+from old.config.settings import Settings
+from old.data import Kline
+from old.exchange.rest_api.market import MarketRestAPI
+from old.indicators import TechnicalIndicators
+from old.trading.portfolio import PortfolioManager
+from old.trading.enums import OrderSide, PositionSide, OrderStatus, TradeMode, KlineIntervals
+from old.trading.orders import NewOrder
 import aiohttp
 import json
 import logging

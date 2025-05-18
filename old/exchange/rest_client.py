@@ -1,10 +1,7 @@
 import aiohttp
-import asyncio
 from typing import List, Dict, Any
-from config.settings import Settings
+from old.config.settings import Settings
 import logging
-from datetime import datetime
-import time
 from asyncio_throttle import Throttler
 from collections import deque
 
@@ -55,7 +52,7 @@ class BinanceRestClient:
             if klines:
                 logger.info("Đã lấy %d kline lịch sử cho %s, interval %s", len(klines), symbol, interval)
                 for kline_data in klines:
-                    from data.kline import Kline
+                    from old.data.kline import Kline
                     kline = Kline(
                         open_time=kline_data["open_time"],
                         open_price=kline_data["open"],

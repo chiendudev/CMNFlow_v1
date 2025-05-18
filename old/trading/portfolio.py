@@ -1,8 +1,8 @@
 # trading/portfolio.py
 import logging
 from typing import Dict, List, Tuple
-from trading.enums import TradeMode, MarginType, OrderSide, PositionSide, OrderStatus
-from trading.orders import NewOrder
+from old.trading.enums import TradeMode, MarginType, OrderSide, PositionSide, OrderStatus
+from old.trading.orders import NewOrder
 
 logger = logging.getLogger(__name__)
 

@@ -1,9 +1,7 @@
-from typing import Dict, List, Optional
-from indicators.technical import TechnicalIndicators
-from config.settings import Settings
+from typing import Dict, List
+from old.indicators.technical import TechnicalIndicators
+from old.config.settings import Settings
 import logging
-import math
-import time
 
 logger = logging.getLogger(__name__)
 

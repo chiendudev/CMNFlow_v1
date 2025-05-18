@@ -1,6 +1,5 @@
 from typing import List, Dict, Optional
-from config.settings import Settings
-from trading.enums import OrderSide, PositionSide
+from old.config.settings import Settings
 import logging
 import time
 import math

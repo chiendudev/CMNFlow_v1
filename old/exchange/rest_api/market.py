@@ -2,12 +2,12 @@ import aiohttp
 import asyncio
 from aiolimiter import AsyncLimiter
 from typing import Optional, Dict, Any, Union, List
-from exchange.rest_api.base_model_symbol_info import ContractInfo
-from config.settings import Settings
-from trading.enums import KlineIntervals
+from old.exchange.rest_api.base_model_symbol_info import ContractInfo
+from old.config.settings import Settings
+from old.trading.enums import KlineIntervals
 from datetime import datetime, timedelta
-from exchange.rest_api.Klines_data import AggTradeModel, AggTradesSum, KlineModel
-from pydantic import ValidationError
+from old.exchange.rest_api.Klines_data import AggTradeModel, AggTradesSum, KlineModel
+
 
 def to_milliseconds(dt: Union[str, int], end_of_day: bool = False) -> int:
     if isinstance(dt, int):

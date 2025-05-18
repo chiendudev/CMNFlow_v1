@@ -1,6 +1,5 @@
-from typing import Dict
-from trading.enums import PositionSide, MarginType, OrderSide
-from trading.orders import NewOrder, StopOrderManager
+from old.trading.enums import PositionSide, MarginType, OrderSide
+from old.trading.orders import NewOrder, StopOrderManager
 import logging
 
 logger = logging.getLogger(__name__)

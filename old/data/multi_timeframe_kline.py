@@ -1,10 +1,10 @@
 from typing import List, Dict
 from aiohttp import ClientSession
 
-from config.settings import Settings
-from exchange.rest_api.Klines_data import KlineModel, AggTradesSum
-from exchange.rest_api.market import MarketRestAPI
-from trading.enums import KlineIntervals
+from old.config.settings import Settings
+from old.exchange.rest_api.Klines_data import KlineModel, AggTradesSum
+from old.exchange.rest_api.market import MarketRestAPI
+from old.trading.enums import KlineIntervals
 
 
 class MultiTimeFrameKline:

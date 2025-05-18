@@ -3,15 +3,10 @@ import logging
 
 import aiohttp
 
-from config.settings import Settings
-from exchange.binance_client import BinanceClient
-from exchange.rest_api.market import MarketRestAPI
-from exchange.rest_client import BinanceRestClient
-from trading.enums import MarginType, KlineIntervals, TradeMode
-from trading.portfolio import PortfolioManager
-from data.storage import DataStorage
-from data.multi_timeframe_kline import MultiTimeFrameKline
-from websocket.client import WebSocketClient
+from old.config.settings import Settings
+from old.trading.enums import KlineIntervals
+from old.data import DataStorage
+from old.data.multi_timeframe_kline import MultiTimeFrameKline
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)

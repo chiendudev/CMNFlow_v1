@@ -1,9 +1,10 @@
 import pytest
 import asyncio
+from pydantic_settings import BaseSettings
 from unittest.mock import AsyncMock, patch
 from src.core.settings import Settings
-from src.core.events import EventBus, KlineEvent, OrderBookEvent, FundingRateEvent, SignalEvent
-from src.data.kline import Kline, OrderBookSnapshot
+from src.core.events import EventBus, KlineEvent, OrderBookEvent, FundingRateEvent, SignalEvent, OrderBookSnapshot
+from src.data.kline import Kline
 from src.strategy.signals import SignalGenerator
 from src.trading.portfolio import Portfolio
 from src.exchange.client import ExchangeClient

@@ -5,7 +5,8 @@ from datetime import datetime
 import logging
 from tenacity import retry, stop_after_attempt, wait_exponential
 from src.core.settings import Settings
-from src.data.kline import Kline, OrderBookSnapshot
+from src.core.events import OrderBookSnapshot
+from src.data.kline import Kline
 from src.data.trade import Trade, TradeSummary
 from src.trading.enums import KlineIntervals, OrderSide, OrderType, PositionSide
 from src.trading.orders import OCOOrder

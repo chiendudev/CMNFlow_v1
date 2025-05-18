@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from trading.enums import OrderSide, PositionSide, OrderType, OrderStatus, TimeInForce
+from old.trading.enums import OrderSide, PositionSide, OrderType, OrderStatus, TimeInForce
 import logging
 
 logger = logging.getLogger(__name__)

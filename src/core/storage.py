@@ -6,8 +6,8 @@ import json
 from functools import lru_cache
 from tenacity import retry, stop_after_attempt, wait_exponential
 from src.core.settings import Settings
-from src.core.events import EventBus, KlineEvent, OrderBookEvent, FundingRateEvent, OrderEvent
-from src.data.kline import Kline, OrderBookSnapshot
+from src.core.events import EventBus, KlineEvent, OrderBookEvent, FundingRateEvent, OrderEvent, OrderBookSnapshot
+from src.data.kline import Kline
 from src.data.trade import Trade
 from src.trading.orders import Order, OCOOrder
 from src.trading.enums import OrderSide, PositionSide, OrderType, OrderStatus, TimeInForce

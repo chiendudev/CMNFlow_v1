@@ -1,142 +1,91 @@
-from datetime import datetime
-from typing import Dict, List, Optional
-import logging
+from typing import List, Dict, Any
+import asyncio
 from src.core.settings import Settings
-from src.core.events import EventBus, KlineEvent, OrderBookEvent, FundingRateEvent, SignalEvent
+from src.core.events import EventBus, KlineEvent, FundingRateEvent, OrderBookEvent, SignalEvent
 from src.core.storage import Storage
-from src.data.kline import Kline, OrderBookSnapshot
-from src.strategy.indicators import Indicators
+from src.trading.risk import RiskManager
 from src.trading.portfolio import Portfolio
+from src.strategy.indicators import Indicators
+from src.strategy.confluence import Confluence
+from src.core.custom_logging import get_logger, set_log_context
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 class SignalGenerator:
     def __init__(self, settings: Settings, event_bus: EventBus, portfolio: Portfolio):
         self.settings = settings
         self.event_bus = event_bus
         self.portfolio = portfolio
-        self.indicators = Indicators()
         self.storage = Storage(settings, event_bus)
-        self.latest_klines: Dict[str, Dict[str, Kline]] = {}  # {symbol: {timeframe: Kline}}
-        self.latest_order_books: Dict[str, OrderBookSnapshot] = {}  # {symbol: OrderBookSnapshot}
-        self.latest_funding_rates: Dict[str, float] = {}  # {symbol: funding_rate}
-        # Đăng ký handlers
-        self.event_bus.subscribe("kline", self._handle_kline, priority=1,
-                                filter_func=lambda e: e.timeframe in self.settings.timeframes)
-        self.event_bus.subscribe("order_book", self._handle_order_book, priority=2)
-        self.event_bus.subscribe("funding_rate", self._handle_funding_rate, priority=2)
+        self.risk_manager = RiskManager(settings, event_bus, portfolio, self.storage)
+        self.indicators = Indicators()
+        self.confluence = Confluence(settings, self.indicators)
+        self.event_bus.subscribe("kline", self._handle_kline, priority=1)
+        logger.info("Initialized SignalGenerator with timeframes=%s", self.settings.timeframes)
 
     async def _handle_kline(self, event: KlineEvent) -> None:
-        """Lưu kline mới nhất và tạo tín hiệu nếu nến đóng."""
-        symbol, timeframe = event.symbol, event.timeframe
-        if symbol not in self.latest_klines:
-            self.latest_klines[symbol] = {}
-        self.latest_klines[symbol][timeframe] = Kline(
-            symbol=event.symbol,
-            timeframe=event.timeframe,
-            open_time=event.open_time,
-            close_time=event.close_time,
-            open=event.open,
-            high=event.high,
-            low=event.low,
-            close=event.close,
-            volume=event.volume,
-            num_trades=event.num_trades,
-            is_closed=event.is_closed
-        )
+        set_log_context(symbol=event.symbol, timeframe=event.timeframe)
         if event.is_closed:
-            signals = self.generate_signals(symbol, timeframe)
+            signals = await self.generate_signals(event.symbol, event.timeframe)
             for signal in signals:
-                await self.event_bus.publish("signal", SignalEvent(symbol, timeframe, signal))
-                logger.debug("Generated signal for %s, timeframe=%s: %s", symbol, timeframe, signal["type"])
+                await self.event_bus.publish("signal", SignalEvent(
+                    type="signal",
+                    symbol=event.symbol,
+                    data=signal,
+                    timestamp=event.timestamp,
+                    timeframe=event.timeframe
+                ))
+                logger.debug("Published signal: symbol=%s, type=%s, entry=%.2f",
+                             event.symbol, signal["type"], signal["entry"])
 
-    async def _handle_order_book(self, event: OrderBookEvent) -> None:
-        """Lưu order book mới nhất."""
-        self.latest_order_books[event.symbol] = OrderBookSnapshot(
-            bids=event.bids,
-            asks=event.asks,
-            timestamp=event.timestamp
-        )
-
-    async def _handle_funding_rate(self, event: FundingRateEvent) -> None:
-        """Lưu funding rate mới nhất."""
-        self.latest_funding_rates[event.symbol] = event.funding_rate
-
-    def generate_signals(self, symbol: str, timeframe: str) -> List[Dict]:
-        """Tạo tín hiệu giao dịch dựa trên confluence và dữ liệu thị trường."""
+    async def generate_signals(self, symbol: str, timeframe: str) -> List[Dict[str, Any]]:
+        set_log_context(symbol=symbol, timeframe=timeframe)
         signals = []
-        if symbol not in self.latest_klines or timeframe not in self.latest_klines[symbol]:
-            logger.debug("No kline data for %s, timeframe=%s", symbol, timeframe)
+
+        # Kiểm tra margin ratio
+        margin_ratio = await self.portfolio.get_margin_ratio()
+        if margin_ratio >= self.settings.max_margin_ratio:
+            logger.warning("Margin ratio too high: %.2f%%, skipping signal generation", margin_ratio * 100)
             return signals
 
-        kline = self.latest_klines[symbol][timeframe]
-        margin_ratio = self.portfolio.get_margin_ratio()
-        if margin_ratio > 80:
-            logger.warning("Margin ratio too high (%.2f%%), skipping signals for %s", margin_ratio, symbol)
+        # Lấy dữ liệu kline
+        klines = await self.storage.get_klines(symbol, timeframe, limit=self.settings.max_klines)
+        if len(klines) < max(self.settings.rsi_period, self.settings.ema_fast_period, self.settings.ema_slow_period):
+            logger.warning("Insufficient kline data: got=%d", len(klines))
             return signals
 
-        # Lấy dữ liệu
-        klines = self._get_historical_klines(symbol, timeframe, self.settings.max_klines)
-        funding_rate = self.latest_funding_rates.get(symbol, 0.0)
-        order_book = self.latest_order_books.get(symbol)
+        # Lấy funding rate gần nhất
+        funding_rates = await self.storage.get_funding_rates(symbol, limit=1)
+        funding_rate = funding_rates[0]["funding_rate"] if funding_rates else 0.0
 
-        # Tính chỉ báo
-        closes = [k.close for k in klines]
-        rsi = self.indicators.rsi(closes, self.settings.rsi_period)
-        ema_fast = self.indicators.ema(closes, self.settings.ema_fast_period)
-        ema_slow = self.indicators.ema(closes, self.settings.ema_slow_period)
-        atr = self.indicators.atr([k.high for k in klines], [k.low for k in klines],
-                                 [k.close for k in klines], self.settings.atr_period)
-        volume_avg = sum(k.volume for k in klines[-20:]) / 20 if len(klines) >= 20 else kline.volume
+        # Lấy order book (giả định None vì chưa có dữ liệu từ OrderBookEvent)
+        order_book = None
 
-        # Tìm mức hỗ trợ/kháng cự
-        support, resistance = self.indicators.find_support_resistance(klines, window=20)
+        # Đánh giá confluence
+        confluence_result = await self.confluence.evaluate(symbol, timeframe, klines, funding_rate, order_book)
+        if not confluence_result["is_valid"]:
+            return signals
 
-        # Logic confluence
-        buy_conditions = [
-            rsi < self.settings.rsi_oversold,  # RSI quá bán
-            kline.close > ema_fast > ema_slow,  # EMA crossover
-            kline.volume > volume_avg * 1.5,  # Volume tăng đột biến
-            funding_rate < self.settings.funding_rate_threshold  # Funding rate âm
-        ]
-        sell_conditions = [
-            rsi > self.settings.rsi_overbought,  # RSI quá mua
-            kline.close < ema_fast < ema_slow,  # EMA crossover
-            kline.volume > volume_avg * 1.5,  # Volume tăng đột biến
-            funding_rate > -self.settings.funding_rate_threshold  # Funding rate dương
-        ]
+        # Tính ATR cho stop loss và take profit
+        atr = self.indicators.calculate_atr(klines, self.settings.atr_period)
+        latest_kline = klines[0]
+        signal_type = confluence_result["direction"]
 
-        # Tính SL/TP
-        entry_price = kline.close
-        sl_distance = atr * self.settings.sl_atr_multiplier
-        tp_distance = atr * self.settings.tp_atr_multiplier
-        buy_sl = max(entry_price - sl_distance, support or 0) if support else entry_price - sl_distance
-        buy_tp = min(entry_price + tp_distance, resistance or float("inf")) if resistance else entry_price + tp_distance
-        sell_sl = min(entry_price + sl_distance, resistance or float("inf")) if resistance else entry_price + sl_distance
-        sell_tp = max(entry_price - tp_distance, support or 0) if support else entry_price - tp_distance
-
-        # Tạo tín hiệu nếu đủ điều kiện confluence
-        if sum(buy_conditions) >= self.settings.min_confluence_count:
-            signals.append({
-                "type": "buy",
-                "entry": entry_price,
-                "stop_loss": buy_sl,
-                "take_profit": buy_tp,
-                "timeframe": timeframe
-            })
-        if sum(sell_conditions) >= self.settings.min_confluence_count:
-            signals.append({
-                "type": "sell",
-                "entry": entry_price,
-                "stop_loss": sell_sl,
-                "take_profit": sell_tp,
-                "timeframe": timeframe
-            })
+        # Tạo tín hiệu dựa trên direction
+        if signal_type == "buy" or (signal_type == "sell" and self.settings.hedging_mode):
+            signal = {
+                "type": signal_type,
+                "entry": latest_kline["close"],
+                "stop_loss": latest_kline["close"] - (atr * self.settings.sl_atr_multiplier) if signal_type == "buy" else latest_kline["close"] + (atr * self.settings.sl_atr_multiplier),
+                "take_profit": latest_kline["close"] + (atr * self.settings.tp_atr_multiplier) if signal_type == "buy" else latest_kline["close"] - (atr * self.settings.tp_atr_multiplier)
+            }
+            signals.append(signal)
+            logger.debug("Generated %s signal: entry=%.2f, sl=%.2f, tp=%.2f",
+                         signal_type, signal["entry"], signal["stop_loss"], signal["take_profit"])
 
         return signals
 
-    def _get_historical_klines(self, symbol: str, timeframe: str, limit: int) -> List[Kline]:
-        """Lấy dữ liệu kline lịch sử từ Storage."""
-        end_time = int(datetime.now().timestamp() * 1000)
-        start_time = end_time - limit * 60 * 1000  # Giả sử timeframe là phút
-        return self.storage.get_klines(symbol, timeframe, start_time, end_time)[:limit]
+    async def run(self) -> None:
+        logger.info("SignalGenerator running")
+        while True:
+            await asyncio.sleep(self.settings.throttle_rate)
