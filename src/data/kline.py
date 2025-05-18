@@ -22,3 +22,7 @@ class Kline(BaseModel):
         self.close = price
         self.volume += qty
         self.num_trades += num_trades
+
+
+class OrderBookSnapshot:
+    pass

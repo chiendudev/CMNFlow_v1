@@ -5,11 +5,11 @@ import asyncio
 from tenacity import retry, stop_after_attempt, wait_exponential
 from aiohttp import ClientSession
 from src.core.settings import Settings
-from core.events import EventBus, SignalEvent, MarkPriceEvent, LiquidationEvent, OrderEvent
-from exchange.client import ExchangeClient
-from trading.orders import Order, OCOOrder
-from trading.enums import OrderSide, PositionSide, OrderStatus, OrderType
-from core.risk import RiskManager
+from src.core.events import EventBus, SignalEvent, MarkPriceEvent, LiquidationEvent, OrderEvent
+from src.exchange.client import ExchangeClient
+from src.trading.orders import Order, OCOOrder
+from src.trading.enums import OrderSide, PositionSide, OrderStatus, OrderType
+from src.trading.risk import RiskManager
 logger = logging.getLogger(__name__)
 
 @dataclass

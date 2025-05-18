@@ -1,5 +1,5 @@
 import asyncio
-import custom_logging
+import logging
 from typing import Any, Dict, List, Optional, Callable, Union
 from dataclasses import dataclass
 from datetime import datetime
@@ -93,7 +93,13 @@ class OrderEvent(Event):
 
 @dataclass
 class RiskEvent(Event):
-    pass
+    risk_type: str = "general"
+
+    def __post_init__(self):
+        super().__post_init__()
+        valid_risk_types = ["margin_ratio", "correlation", "funding_rate", "position_size", "general"]
+        if self.risk_type not in valid_risk_types:
+            raise ValueError(f"Invalid risk_type: {self.risk_type}")
 
 @dataclass(kw_only=True)
 class TradeEvent(Event):
