@@ -32,10 +32,6 @@ class MultiTimeFrameKline:
             )
             k.recent_trades = arr_agg_trade_sum
             self.update_single_kline(kline=k)
-            print('x' * 50)
-            for i, v in self.kline_data.items():
-                print(f'{i} - {v}')
-            print('x' * 50)
 
 
     def update_single_kline(self, kline: KlineModel, only_if_closed: bool = False):
