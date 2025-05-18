@@ -1,7 +1,10 @@
 import asyncio
 import logging
+from typing import Dict
 from src.core.settings import Settings
 from src.core.storage import Storage
+from src.data.kline import Kline
+from src.data.trade import Trade
 from src.core.events import EventBus, TradeEvent, OrderBookEvent, FundingRateEvent, MarkPriceEvent, SignalEvent, LiquidationEvent, KlineEvent
 from src.exchange.client import ExchangeClient
 from src.exchange.websocket import WebSocketClient
@@ -9,7 +12,7 @@ from src.exchange.kline_manager import KlineManager
 from src.strategy.signals import SignalGenerator
 from src.trading.portfolio import Portfolio
 from src.trading.orders import Order
-from src.trading.enums import OrderSide, PositionSide, OrderStatus
+from trading.enums import OrderSide, PositionSide, OrderStatus
 
 logger = logging.getLogger(__name__)
 
@@ -17,24 +20,23 @@ class TradingEngine:
     def __init__(self, settings: Settings):
         self.settings = settings
         self.storage = Storage(settings)
-        self.event_bus = EventBus()
+        self.event_bus = EventBus(settings=settings)
         self.exchange = ExchangeClient(settings)
         self.websocket = WebSocketClient(settings, self.event_bus)
-        self.portfolio = Portfolio(settings)
+        self.portfolio = Portfolio(settings, self.event_bus, self.exchange)
         self.kline_managers: Dict[str, KlineManager] = {
             symbol: KlineManager(symbol, settings) for symbol in settings.symbols
         }
-        self.signal_generator = SignalGenerator(settings)
-        # Đăng ký handlers với priority và filter
-        self.event_bus.subscribe("trade", self._handle_trade, priority=1)  # Ưu tiên cao để cập nhật nến trước
+        self.signal_generator = SignalGenerator(settings, self.event_bus, self.portfolio)
+        self.event_bus.subscribe("trade", self._handle_trade, priority=1)
         self.event_bus.subscribe("order_book", self._handle_order_book, priority=2)
         self.event_bus.subscribe("mark_price", self._handle_mark_price, priority=2)
         self.event_bus.subscribe("funding_rate", self._handle_funding_rate, priority=2)
         self.event_bus.subscribe("liquidation", self._handle_liquidation, priority=3)
         self.event_bus.subscribe("kline", self._handle_kline, priority=1,
-                                filter_func=lambda e: e.timeframe == self.settings.base_timeframe)  # Chỉ xử lý base timeframe
+                                filter_func=lambda e: e.timeframe == self.settings.base_timeframe)
         self.event_bus.subscribe("signal", self._handle_signal, priority=5,
-                                filter_func=lambda e: e.symbol in self.settings.symbols)  # Chỉ xử lý symbol được config
+                                filter_func=lambda e: e.symbol in self.settings.symbols)
 
     async def _handle_trade(self, event: TradeEvent) -> None:
         trade = Trade.model_validate(event.data)
@@ -43,10 +45,9 @@ class TradingEngine:
             klines = self.kline_managers[event.symbol].get_klines(tf)
             if klines:
                 kline = klines[-1]
-                signals = self.signal_generator.generate_signals(kline, tf, [])
+                signals = self.signal_generator.generate_signals(event.symbol, tf)
                 for signal in signals:
                     await self.event_bus.publish("signal", SignalEvent(event.symbol, tf, signal))
-        await self.portfolio.update_positions(event.symbol, trade.price)
 
     async def _handle_order_book(self, event: OrderBookEvent) -> None:
         klines = self.kline_managers[event.symbol].get_klines(self.settings.base_timeframe)
@@ -57,7 +58,6 @@ class TradingEngine:
         klines = self.kline_managers[event.symbol].get_klines(self.settings.base_timeframe)
         if klines:
             klines[-1].mark_price = event.mark_price
-        await self.portfolio.update_positions(event.symbol, event.mark_price)
 
     async def _handle_funding_rate(self, event: FundingRateEvent) -> None:
         klines = self.kline_managers[event.symbol].get_klines(self.settings.base_timeframe)
@@ -67,16 +67,6 @@ class TradingEngine:
     async def _handle_liquidation(self, event: LiquidationEvent) -> None:
         logger.info("Liquidation detected for %s: side=%s, price=%.2f, quantity=%.4f",
                     event.symbol, event.side, event.price, event.quantity)
-        # Gửi tín hiệu nếu thanh lý lớn
-        if event.quantity > self.settings.trade_quantity * 10:  # Ví dụ: Thanh lý lớn hơn 10x khối lượng giao dịch
-            signal = {
-                "type": "sell" if event.side == "BUY" else "buy",
-                "entry": event.price,
-                "stop_loss": event.price + 100 if event.side == "BUY" else event.price - 100,
-                "take_profit": event.price - 200 if event.side == "BUY" else event.price + 200,
-                "reason": f"Large liquidation detected: {event.quantity}"
-            }
-            await self.event_bus.publish("signal", SignalEvent(event.symbol, self.settings.base_timeframe, signal))
 
     async def _handle_kline(self, event: KlineEvent) -> None:
         klines = self.kline_managers[event.symbol].get_klines(event.timeframe)
@@ -98,28 +88,16 @@ class TradingEngine:
                 is_closed=event.is_closed
             )
             klines.append(new_kline)
-        if event.is_closed:
-            signals = self.signal_generator.generate_signals(klines[-1], event.timeframe, [])
-            for signal in signals:
-                await self.event_bus.publish("signal", SignalEvent(event.symbol, event.timeframe, signal))
 
     async def _handle_signal(self, event: SignalEvent) -> None:
-        order = Order(
-            symbol=event.symbol,
-            side=OrderSide.BUY if event.signal["type"] == "buy" else OrderSide.SELL,
-            position_side=PositionSide.BOTH,
-            quantity=self.settings.trade_quantity,
-            price=event.signal["entry"],
-            status=OrderStatus.FILLED
-        )
-        await self.portfolio.process_order(order)
-        self.storage.save_position(event.symbol, event.signal)
+        logger.debug("Received signal for %s: %s", event.symbol, event.signal["type"])
 
     async def start_historical(self, symbol: str, start_date: str, end_date: str) -> None:
         await self.kline_managers[symbol].fetch_historical(self.exchange, start_date, end_date)
         self.storage.save_klines(symbol, self.kline_managers[symbol].klines)
 
     async def start_realtime(self) -> None:
+        await self.portfolio.initialize()
         await self.websocket.run()
 
     async def run(self) -> None:

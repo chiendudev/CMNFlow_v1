@@ -1,76 +1,32 @@
-from typing import Callable, Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass
 import asyncio
-import logging
-from tenacity import retry, stop_after_attempt, wait_exponential
+import custom_logging
+from typing import Any, Dict, List, Optional, Callable, Union
+from dataclasses import dataclass
+from datetime import datetime
+from src.core.settings import Settings
+from src.trading.orders import Order, OCOOrder
+from src.trading.enums import OrderSide, PositionSide
+from src.trading.portfolio import Position
 
-# Khởi tạo logger
 logger = logging.getLogger(__name__)
 
-
-# Các lớp sự kiện
 @dataclass
-class TradeEvent:
-    """Sự kiện giao dịch (aggTrade hoặc trade) từ WebSocket hoặc API."""
+class Event:
+    type: str
     symbol: str
-    data: dict  # Dữ liệu thô: id, price, qty, timestamp, is_maker, v.v.
-
-
-@dataclass
-class OrderBookEvent:
-    """Sự kiện cập nhật order book từ WebSocket hoặc API."""
-    symbol: str
-    bids: List[tuple[float, float]]  # [price, quantity]
-    asks: List[tuple[float, float]]  # [price, quantity]
+    data: Any
     timestamp: int
+    position_side: Optional[PositionSide] = None
+    priority: int = 0
 
+    def __post_init__(self):
+        if not self.symbol:
+            raise ValueError("Symbol cannot be empty")
+        if self.timestamp <= 0:
+            raise ValueError("Invalid timestamp")
 
-@dataclass
-class FundingRateEvent:
-    """Sự kiện lãi suất funding từ WebSocket hoặc API."""
-    symbol: str
-    funding_rate: float
-    funding_time: int
-
-
-@dataclass
-class MarkPriceEvent:
-    """Sự kiện giá mark từ WebSocket hoặc API."""
-    symbol: str
-    mark_price: float
-    timestamp: int
-
-
-@dataclass
-class OpenInterestEvent:
-    """Sự kiện open interest từ API."""
-    symbol: str
-    open_interest: float
-    timestamp: int
-
-
-@dataclass
-class SignalEvent:
-    """Sự kiện tín hiệu giao dịch từ SignalGenerator."""
-    symbol: str
-    timeframe: str
-    signal: dict  # {type: buy/sell, entry, stop_loss, take_profit, v.v.}
-
-
-@dataclass
-class LiquidationEvent:
-    """Sự kiện thanh lý từ WebSocket (@forceOrder) hoặc API."""
-    symbol: str
-    side: str  # BUY/SELL
-    price: float
-    quantity: float
-    timestamp: int
-
-
-@dataclass
-class KlineEvent:
-    """Sự kiện cập nhật nến từ WebSocket (@kline_<interval>)."""
-    symbol: str
+@dataclass(kw_only=True)
+class KlineEvent(Event):
     timeframe: str
     open_time: int
     close_time: int
@@ -80,91 +36,157 @@ class KlineEvent:
     close: float
     volume: float
     num_trades: int
-    is_closed: bool
+    is_closed: bool = False
 
+    def __post_init__(self):
+        super().__post_init__()
+        if self.open_time >= self.close_time:
+            raise ValueError("open_time must be less than close_time")
+        if any(v < 0 for v in [self.open, self.high, self.low, self.close, self.volume]):
+            raise ValueError("Price and volume must be non-negative")
+
+@dataclass(kw_only=True)
+class OrderBookEvent(Event):
+    bids: List[tuple[float, float]]
+    asks: List[tuple[float, float]]
+
+    def __post_init__(self):
+        super().__post_init__()
+        if not (self.bids and self.asks):
+            raise ValueError("Bids and asks cannot be empty")
+
+@dataclass(kw_only=True)
+class FundingRateEvent(Event):
+    funding_rate: float
+
+    def __post_init__(self):
+        super().__post_init__()
+        if not isinstance(self.funding_rate, float):
+            raise ValueError("Funding rate must be a float")
+
+@dataclass(kw_only=True)
+class MarkPriceEvent(Event):
+    mark_price: float
+
+    def __post_init__(self):
+        super().__post_init__()
+        if self.mark_price <= 0:
+            raise ValueError("Mark price must be positive")
+
+@dataclass(kw_only=True)
+class SignalEvent(Event):
+    timeframe: str
+    signal: Dict
+
+    def __post_init__(self):
+        super().__post_init__()
+        if not self.signal:
+            raise ValueError("Signal cannot be empty")
+
+@dataclass(kw_only=True)
+class OrderEvent(Event):
+    order: Union[Order, OCOOrder]
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.position_side = self.order.position_side
+
+@dataclass
+class RiskEvent(Event):
+    pass
+
+@dataclass(kw_only=True)
+class TradeEvent(Event):
+    price: float
+    quantity: float
+    is_buyer_maker: bool
+
+    def __post_init__(self):
+        super().__post_init__()
+        if self.price <= 0 or self.quantity <= 0:
+            raise ValueError("Price and quantity must be positive")
+
+@dataclass(kw_only=True)
+class LiquidationEvent(Event):
+    side: str
+    price: float
+    quantity: float
+
+    def __post_init__(self):
+        super().__post_init__()
+        if self.side not in ["LONG", "SHORT"]:
+            raise ValueError("Side must be LONG or SHORT")
+        if self.price <= 0 or self.quantity <= 0:
+            raise ValueError("Price and quantity must be positive")
+
+@dataclass(kw_only=True)
+class PositionEvent(Event):
+    position: Position
+    action: str  # "OPEN", "UPDATE", "CLOSE"
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.position_side = PositionSide(self.position.side)  # Chuyển đổi chuỗi thành PositionSide enum
+        if self.action not in ["OPEN", "UPDATE", "CLOSE"]:
+            raise ValueError("Action must be OPEN, UPDATE, or CLOSE")
 
 class EventBus:
-    def __init__(self):
-        """Khởi tạo EventBus để quản lý đăng ký và phát hành sự kiện với priority và filtering."""
-        self._handlers: Dict[str, List[Tuple[int, Callable[[Any], None], Optional[Callable[[Any], bool]]]]] = {}
-        self._lock = asyncio.Lock()  # Đồng bộ truy cập handlers
-        self._default_priority = 10  # Ưu tiên mặc định
+    def __init__(self, settings: Settings):
+        self.settings = settings
+        self.subscribers: Dict[str, List[Dict[str, Any]]] = {}
+        self.lock = asyncio.Lock()
+        logger.info("Initialized EventBus with enabled events: %s", settings.enabled_events)
 
-    def subscribe(self, event_type: str, handler: Callable[[Any], None],
-                  priority: int = 10, filter_func: Optional[Callable[[Any], bool]] = None) -> None:
-        """
-        Đăng ký handler cho một loại sự kiện với ưu tiên và bộ lọc.
+    async def subscribe(self, event_type: str, handler: Callable, priority: int = 0, filter_func: Optional[Callable] = None) -> str:
+        """Đăng ký handler cho sự kiện với ưu tiên và bộ lọc."""
+        async with self.lock:
+            if event_type not in self.subscribers:
+                self.subscribers[event_type] = []
+            handler_id = f"{event_type}_{id(handler)}"
+            self.subscribers[event_type].append({
+                "handler": handler,
+                "priority": priority,
+                "filter": filter_func,
+                "id": handler_id
+            })
+            logger.debug("Subscribed handler %s for event %s with priority %d", handler_id, event_type, priority)
+            return handler_id
 
-        Args:
-            event_type: Loại sự kiện (trade, signal, liquidation, v.v.).
-            handler: Hàm xử lý sự kiện (có thể là async).
-            priority: Mức ưu tiên (số nhỏ hơn = ưu tiên cao hơn).
-            filter_func: Hàm lọc, trả về True nếu sự kiện được xử lý.
-        """
-        # Sử dụng asyncio.get_event_loop() làm fallback
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = asyncio.get_event_loop()
+    async def unsubscribe(self, event_type: str, handler_id: str) -> bool:
+        """Hủy đăng ký handler."""
+        async with self.lock:
+            if event_type in self.subscribers:
+                initial_len = len(self.subscribers[event_type])
+                self.subscribers[event_type] = [
+                    sub for sub in self.subscribers[event_type] if sub["id"] != handler_id
+                ]
+                if len(self.subscribers[event_type]) < initial_len:
+                    logger.debug("Unsubscribed handler %s from event %s", handler_id, event_type)
+                    return True
+                if not self.subscribers[event_type]:
+                    del self.subscribers[event_type]
+            logger.warning("Handler %s not found for event %s", handler_id, event_type)
+            return False
 
-        if event_type not in self._handlers:
-            self._handlers[event_type] = []
-        self._handlers[event_type].append((priority, handler, filter_func))
-        # Sắp xếp handlers theo priority
-        self._handlers[event_type].sort(key=lambda x: x[0])
-        logger.debug("Subscribed handler for event type: %s, priority: %d", event_type, priority)
+    async def publish(self, event_type: str, event: Event) -> None:
+        """Gửi sự kiện đến các subscribers."""
+        if event_type not in self.settings.enabled_events:
+            logger.debug("Event type %s is disabled, skipping publish", event_type)
+            return
 
-    def unsubscribe(self, event_type: str, handler: Callable[[Any], None]) -> None:
-        """
-        Hủy đăng ký handler cho một loại sự kiện.
-
-        Args:
-            event_type: Loại sự kiện.
-            handler: Hàm xử lý cần hủy.
-        """
-        # Sử dụng asyncio.get_event_loop() làm fallback
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = asyncio.get_event_loop()
-
-        if event_type in self._handlers:
-            self._handlers[event_type] = [h for h in self._handlers[event_type] if h[1] != handler]
-            logger.debug("Unsubscribed handler for event type: %s", event_type)
-
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=5))
-    async def publish(self, event_type: str, event: Any) -> None:
-        """
-        Phát hành một sự kiện đến tất cả handlers đã đăng ký, theo thứ tự ưu tiên và bộ lọc.
-
-        Args:
-            event_type: Loại sự kiện.
-            event: Đối tượng sự kiện (TradeEvent, SignalEvent, v.v.).
-        """
-        async with self._lock:
-            if event_type not in self._handlers:
-                logger.debug("No handlers for event type: %s", event_type)
+        async with self.lock:
+            if event_type not in self.subscribers:
+                logger.debug("No subscribers for event %s", event_type)
                 return
 
-            for priority, handler, filter_func in self._handlers[event_type]:
-                try:
-                    # Kiểm tra bộ lọc
-                    if filter_func and not filter_func(event):
-                        logger.debug("Event %s filtered out for handler with priority %d", event_type, priority)
-                        continue
+            subscribers = sorted(self.subscribers[event_type], key=lambda x: x["priority"], reverse=True)
+            logger.debug("Publishing event %s for %s, timestamp=%d, subscribers=%d",
+                         event_type, event.symbol, event.timestamp, len(subscribers))
 
-                    if asyncio.iscoroutinefunction(handler):
-                        await handler(event)
-                    else:
-                        handler(event)
-                    logger.debug("Processed event type %s for %s, priority %d",
-                                 event_type, getattr(event, 'symbol', 'unknown'), priority)
-                except Exception as e:
-                    logger.error("Failed to process event %s with priority %d: %s", event_type, priority, e)
-                    raise  # Retry nếu cần
-
-    async def clear(self) -> None:
-        """Xóa tất cả handlers, dùng trong cleanup hoặc test."""
-        async with self._lock:
-            self._handlers.clear()
-            logger.info("Cleared all event handlers")
+            for sub in subscribers:
+                if not sub["filter"] or sub["filter"](event):
+                    try:
+                        await sub["handler"](event)
+                        logger.debug("Event %s processed by handler %s", event_type, sub["id"])
+                    except Exception as e:
+                        logger.error("Handler %s failed for event %s: %s", sub["id"], event_type, e)
