@@ -1,0 +1,9 @@
+aiohttp
+python-dotenv
+pydantic==1.10.13
+asyncio-throttle
+pytest
+pytest-asyncio
+logging_config
+numpy
+aiolimiter
