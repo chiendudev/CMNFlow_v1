@@ -6,7 +6,7 @@ from datetime import datetime
 from src.core.settings import Settings
 from src.trading.orders import Order, OCOOrder
 from src.trading.enums import OrderSide, PositionSide
-from src.trading.portfolio import Position
+#from src.trading.portfolio import Position
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from src.trading.portfolio import Position
@@ -140,7 +140,8 @@ class LiquidationEvent(Event):
 
 @dataclass(kw_only=True)
 class PositionEvent(Event):
-    position: Position
+    #from src.trading.portfolio import Position
+    position: Any
     action: str  # "OPEN", "UPDATE", "CLOSE"
 
     def __post_init__(self):

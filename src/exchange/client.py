@@ -81,7 +81,7 @@ class IExchange(ABC):
 class ExchangeClient(IExchange):
     def __init__(self, settings: Settings):
         self.settings = settings
-        self.base_url = "https://fapi.binance.com"
+        self.base_url = "https://testnet.binancefuture.com"
         self.api_key = settings.api_key
         self.api_secret = settings.api_secret
         self.rate_limit = 2400
@@ -106,6 +106,7 @@ class ExchangeClient(IExchange):
                     data = await resp.json()
                     self.weight_used += int(resp.headers.get("x-mbx-used-weight-1m", 0))
                     return data
+            return {}
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
     async def fetch_klines(self, symbol: str, interval: KlineIntervals, start_time: str, end_time: str) -> List[Kline]:

@@ -13,15 +13,17 @@ class ContextFilter(logging.Filter):
 
     def __init__(self):
         super().__init__()
-        self.context = {}
+        self.context = {"symbol": "-", "timeframe": "-"}
 
     def set_context(self, **kwargs):
         self.context.update(kwargs)
 
     def filter(self, record):
-        for key, value in self.context.items():
-            setattr(record, key, value if value is not None else "-")
+        # Đảm bảo luôn có các field mặc định
+        for key in ["symbol", "timeframe"]:
+            setattr(record, key, self.context.get(key, "-"))
         return True
+
 
 
 context_filter = ContextFilter()

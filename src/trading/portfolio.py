@@ -5,7 +5,7 @@ from typing import Dict, Optional, List
 
 from src.core.events import PositionEvent, OrderEvent
 from src.core.settings import Settings
-from src.core.custom_logging import get_logger, set_log_context
+from src.core.logging_config import get_logger, set_log_context
 from src.trading.orders import Order, OCOOrder
 from src.exchange.client import ExchangeClient
 

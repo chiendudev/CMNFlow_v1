@@ -1,9 +1,11 @@
 import websockets
 import json
+
 import logging
 from src.core.events import EventBus, TradeEvent, OrderBookEvent, FundingRateEvent, MarkPriceEvent, LiquidationEvent, KlineEvent
 from src.core.settings import Settings
 from tenacity import retry, stop_after_attempt, wait_exponential
+
 
 logger = logging.getLogger(__name__)
 
