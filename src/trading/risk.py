@@ -1,12 +1,15 @@
 import logging
 import numpy as np
+import sqlite3
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime
 from tenacity import retry, stop_after_attempt, wait_exponential
+from functools import lru_cache
+
+from src.core.logging_config import set_log_context
 from src.core.settings import Settings
 from src.core.events import EventBus, RiskEvent
 from src.core.storage import Storage
-
 from src.core.events import MarkPriceEvent
 from src.trading.portfolio import Portfolio, Position
 from src.trading.orders import Order, OCOOrder
@@ -14,7 +17,6 @@ from src.trading.enums import OrderSide, PositionSide
 from src.data.kline import Kline
 
 logger = logging.getLogger(__name__)
-
 
 class RiskManager:
     def __init__(self, settings: Settings, event_bus: EventBus, portfolio: Portfolio, storage: Storage):
@@ -30,9 +32,14 @@ class RiskManager:
         self.sl_atr_multiplier = settings.sl_atr_multiplier
         self.tp_atr_multiplier = settings.tp_atr_multiplier
         self.trailing_stop_distance = settings.trailing_stop_distance
-        self.event_bus.subscribe("mark_price", self._handle_mark_price, priority=3)
+        self._initialize_subscribers()
         logger.info("Initialized RiskManager with max_risk=%.2f%%, max_margin_ratio=%.2f%%",
                     self.max_risk_per_trade * 100, self.max_margin_ratio * 100)
+
+    async def _initialize_subscribers(self):
+        """Đăng ký sự kiện mark_price."""
+        set_log_context()
+        await self.event_bus.subscribe("mark_price", self._handle_mark_price, priority=3)
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=5))
     def calculate_atr(self, symbol: str, timeframe: str, period: int = 14) -> float:
@@ -56,6 +63,9 @@ class RiskManager:
 
     def calculate_position_size(self, symbol: str, entry_price: float, stop_loss: float) -> float:
         """Tính kích thước vị thế dựa trên rủi ro và ATR."""
+        if self.portfolio.balance <= 0:
+            logger.error("Cannot calculate position size: balance is zero")
+            return 0.0
         atr = self.calculate_atr(symbol, self.settings.base_timeframe, self.atr_period)
         if atr == 0:
             logger.error("Cannot calculate position size: ATR is zero")
@@ -71,7 +81,6 @@ class RiskManager:
         volatility_factor = self._get_volatility_factor(symbol)
         adjusted_size = position_size / volatility_factor
 
-        # Giới hạn kích thước vị thế theo số dư và leverage
         max_size = (self.portfolio.balance * self.settings.leverage) / entry_price
         final_size = min(adjusted_size, max_size)
 
@@ -88,11 +97,11 @@ class RiskManager:
         closes = np.array([kline.close for kline in klines])
         sma = np.mean(closes)
         std = np.std(closes)
-        bandwidth = (std * 2) / sma  # Bollinger Band width
+        bandwidth = (std * 2) / sma
         if bandwidth > self.volatility_threshold:
-            return 1.5  # Giảm kích thước vị thế khi biến động cao
+            return 1.5
         elif bandwidth < self.volatility_threshold / 2:
-            return 0.8  # Tăng kích thước vị thế khi biến động thấp
+            return 0.8
         return 1.0
 
     def calculate_sl_tp(self, symbol: str, entry_price: float, side: str) -> Tuple[float, float]:
@@ -105,14 +114,14 @@ class RiskManager:
         if side == "LONG":
             stop_loss = entry_price - atr * self.sl_atr_multiplier
             take_profit = entry_price + atr * self.tp_atr_multiplier
-        else:  # SHORT
+        else:
             stop_loss = entry_price + atr * self.sl_atr_multiplier
             take_profit = entry_price - atr * self.tp_atr_multiplier
 
         logger.debug("Calculated SL/TP for %s (%s): SL=%.2f, TP=%.2f", symbol, side, stop_loss, take_profit)
         return stop_loss, take_profit
 
-    def update_trailing_stop(self, position: Position, current_price: float) -> Optional[float]:
+    async def update_trailing_stop(self, position: Position, current_price: float) -> Optional[float]:
         """Cập nhật Trailing Stop dựa trên giá hiện tại."""
         if not position.trailing_stop:
             position.trailing_stop = (
@@ -127,11 +136,12 @@ class RiskManager:
 
         if position.trailing_stop != position.stop_loss:
             position.stop_loss = position.trailing_stop
-            logger.debug("Updated trailing stop for %s (%s): %.2f", position.symbol, position.side,
-                         position.trailing_stop)
+            logger.debug("Updated trailing stop for %s (%s): %.2f", position.symbol, position.side, position.trailing_stop)
+            await self.storage.save_position_async(position)
             return position.trailing_stop
         return None
 
+    @lru_cache(maxsize=128)
     def check_correlation_risk(self, symbol: str) -> bool:
         """Kiểm tra rủi ro tương quan giữa các cặp."""
         if not self.settings.symbols or len(self.settings.symbols) < 2:
@@ -161,13 +171,15 @@ class RiskManager:
     async def check_risk(self, order: Order, oco_order: Optional[OCOOrder] = None) -> Tuple[bool, str]:
         """Kiểm tra rủi ro trước khi đặt lệnh."""
         try:
-            # Kiểm tra số dư
-            risk_amount = order.quantity * (order.price or order.stop_price or 0.0)
+            if not order.price and not order.stop_price:
+                return False, "Order missing price or stop_price"
+            if self.portfolio.balance <= 0:
+                return False, "Insufficient balance"
+            risk_amount = order.quantity * (order.price or order.stop_price)
             if risk_amount > self.portfolio.balance * self.max_risk_per_trade:
                 return False, f"Order exceeds max risk: {risk_amount:.2f} > {self.portfolio.balance * self.max_risk_per_trade:.2f}"
 
-            # Kiểm tra margin ratio
-            margin_ratio = self.portfolio.get_margin_ratio()
+            margin_ratio = await self.portfolio.get_margin_ratio()
             if margin_ratio > self.max_margin_ratio:
                 await self.event_bus.publish("risk", RiskEvent(
                     type="high_margin_ratio",
@@ -177,16 +189,13 @@ class RiskManager:
                 ))
                 return False, f"Margin ratio too high: {margin_ratio:.2f}% > {self.max_margin_ratio:.2f}%"
 
-            # Kiểm tra funding rate
             funding_rate = await self._get_latest_funding_rate(order.symbol)
             if funding_rate > self.settings.funding_rate_threshold:
                 return False, f"Funding rate too high: {funding_rate:.6f} > {self.settings.funding_rate_threshold:.6f}"
 
-            # Kiểm tra correlation risk
             if not self.check_correlation_risk(order.symbol):
                 return False, "High correlation risk with existing positions"
 
-            # Kiểm tra OCO order
             if oco_order:
                 if not oco_order.validate():
                     return False, "Invalid OCO order"
@@ -199,26 +208,31 @@ class RiskManager:
             logger.error("Risk check failed: %s", e)
             return False, f"Risk check error: {str(e)}"
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=5))
     async def _get_latest_funding_rate(self, symbol: str) -> float:
         """Lấy funding rate mới nhất từ Storage."""
-        with sqlite3.connect(self.storage.db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-                SELECT rate FROM funding_rate 
-                WHERE symbol = ? 
-                ORDER BY timestamp DESC 
-                LIMIT 1
-            """, (symbol,))
-            row = cursor.fetchone()
-            return float(row[0]) if row else 0.0
+        try:
+            with sqlite3.connect(self.storage.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT rate FROM funding_rates 
+                    WHERE symbol = ? 
+                    ORDER BY timestamp DESC 
+                    LIMIT 1
+                """, (symbol,))
+                row = cursor.fetchone()
+                return float(row[0]) if row else 0.0
+        except sqlite3.Error as e:
+            logger.error("Failed to get funding rate for %s: %s", symbol, e)
+            raise
 
     async def reduce_position_if_needed(self, symbol: str, side: str) -> bool:
         """Giảm vị thế nếu margin ratio quá cao."""
-        margin_ratio = self.portfolio.get_margin_ratio()
+        margin_ratio = await self.portfolio.get_margin_ratio()
         if margin_ratio > self.max_margin_ratio:
-            position = self.portfolio.get_position(symbol, side)
-            if position:
-                reduce_quantity = position.quantity * 0.5  # Giảm 50% vị thế
+            position = await self.portfolio.get_position(symbol)
+            if position and position.side == side:
+                reduce_quantity = position.quantity * 0.5
                 order = Order(
                     symbol=symbol,
                     side=OrderSide.SELL if side == "LONG" else OrderSide.BUY,
@@ -245,13 +259,12 @@ class RiskManager:
         symbol = event.symbol
         current_price = event.mark_price
         if symbol in self.portfolio.positions:
-            for side, position in self.portfolio.positions[symbol].items():
-                # Cập nhật trailing stop
-                new_stop = self.update_trailing_stop(position, current_price)
+            position = await self.portfolio.get_position(symbol)
+            if position:
+                new_stop = await self.update_trailing_stop(position, current_price)
                 if new_stop:
-                    self.storage.save_position(position)
+                    await self.storage.save_position_async(position)
 
-                # Kiểm tra và giảm vị thế nếu cần
-                await self.reduce_position_if_needed(symbol, side)
+                await self.reduce_position_if_needed(symbol, position.side)
                 logger.debug("Processed mark price for %s (%s): price=%.2f, margin_ratio=%.2f%%",
-                             symbol, side, current_price, self.portfolio.get_margin_ratio())
+                             symbol, position.side, current_price, margin_ratio)

@@ -1,2 +1,410 @@
-2025-05-19 20:28:29 | root | INFO | logging_config:83 | symbol:- | timeframe:- | Logging initialized: level=DEBUG, directory=logs, rotation_size=10MB
-2025-05-19 20:28:29 | src.core.events | INFO | events:158 | symbol:- | timeframe:- | Initialized EventBus with enabled events: []
+2025-05-19 23:53:45 | root | INFO | logging_config:83 | symbol:- | timeframe:- | Logging initialized: level=DEBUG, directory=logs, rotation_size=10MB
+2025-05-19 23:53:45 | src.core.events | INFO | events:158 | symbol:- | timeframe:- | Initialized EventBus with enabled events: []
+2025-05-19 23:53:45 | src.core.storage | INFO | storage:19 | symbol:- | timeframe:- | Initialized SQLite database at data/trading.db
+2025-05-19 23:53:45 | src.core.events | INFO | events:158 | symbol:- | timeframe:- | Initialized EventBus with enabled events: []
+2025-05-19 23:53:45 | src.trading.portfolio | INFO | portfolio:31 | symbol:- | timeframe:- | Initialized Portfolio for symbols: ['BTCUSDT', 'ETHUSDT']
+2025-05-19 23:53:45 | src.trading.risk | INFO | risk:36 | symbol:- | timeframe:- | Initialized RiskManager with max_risk=1.00%, max_margin_ratio=80.00%
+2025-05-19 23:53:45 | src.strategy.signals | INFO | signals:37 | symbol:- | timeframe:- | Initialized SignalGenerator with symbols=['BTCUSDT', 'ETHUSDT'], timeframes=['5m', '15m']
+2025-05-19 23:53:45 | src.engine | INFO | engine:26 | symbol:- | timeframe:- | Initialized TradingEngine for symbols: ['BTCUSDT', 'ETHUSDT']
+2025-05-19 23:53:45 | __main__ | INFO | main:37 | symbol:- | timeframe:- | Initialized TradingSystem with symbols=['BTCUSDT', 'ETHUSDT'], timeframes=['5m', '15m']
+2025-05-19 23:53:45 | src.core.events | DEBUG | events:172 | symbol:- | timeframe:- | Subscribed handler kline_4458285568 for event kline with priority 1
+2025-05-19 23:53:45 | src.core.events | DEBUG | events:172 | symbol:- | timeframe:- | Subscribed handler funding_rate_4459152512 for event funding_rate with priority 1
+2025-05-19 23:53:45 | src.core.storage | INFO | storage:84 | symbol:- | timeframe:- | Storage initialized
+2025-05-19 23:53:45 | __main__ | INFO | main:64 | symbol:- | timeframe:- | Connecting to WebSocket: wss://fstream.binance.com/ws/btcusdt@kline_5m/btcusdt@kline_15m/btcusdt@fundingRate/btcusdt@depth5@100ms/ethusdt@kline_5m/ethusdt@kline_15m/ethusdt@fundingRate/ethusdt@depth5@100ms
+2025-05-19 23:53:45 | src.core.events | DEBUG | events:194 | symbol:- | timeframe:- | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:45 | __main__ | DEBUG | main:130 | symbol:- | timeframe:- | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:- | timeframe:- | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:130 | symbol:- | timeframe:- | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:- | timeframe:- | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:130 | symbol:- | timeframe:- | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:- | timeframe:- | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:130 | symbol:- | timeframe:- | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:46 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.62
+2025-05-19 23:53:46 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.62
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:46 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.61
+2025-05-19 23:53:46 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.61
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:46 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:5m | Saved kline: symbol=BTCUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:5m | Published kline event: symbol=BTCUSDT, timeframe=5m, close=105156.90
+2025-05-19 23:53:46 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:15m | Saved kline: symbol=BTCUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:15m | Published kline event: symbol=BTCUSDT, timeframe=15m, close=105156.90
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:46 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.61
+2025-05-19 23:53:46 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.61
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:46 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:46 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:47 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:5m | Saved kline: symbol=BTCUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:5m | Published kline event: symbol=BTCUSDT, timeframe=5m, close=105157.00
+2025-05-19 23:53:47 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:15m | Saved kline: symbol=BTCUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:15m | Published kline event: symbol=BTCUSDT, timeframe=15m, close=105157.00
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:47 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.61
+2025-05-19 23:53:47 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.61
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:47 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:5m | Saved kline: symbol=BTCUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:5m | Published kline event: symbol=BTCUSDT, timeframe=5m, close=105157.00
+2025-05-19 23:53:47 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:15m | Saved kline: symbol=BTCUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:15m | Published kline event: symbol=BTCUSDT, timeframe=15m, close=105157.00
+2025-05-19 23:53:47 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.24
+2025-05-19 23:53:47 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.24
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:47 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.23
+2025-05-19 23:53:47 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.23
+2025-05-19 23:53:47 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:5m | Saved kline: symbol=BTCUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:5m | Published kline event: symbol=BTCUSDT, timeframe=5m, close=105156.90
+2025-05-19 23:53:47 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:15m | Saved kline: symbol=BTCUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:15m | Published kline event: symbol=BTCUSDT, timeframe=15m, close=105156.90
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:47 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:47 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:48 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.24
+2025-05-19 23:53:48 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.24
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:48 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:5m | Saved kline: symbol=BTCUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:5m | Published kline event: symbol=BTCUSDT, timeframe=5m, close=105156.90
+2025-05-19 23:53:48 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:15m | Saved kline: symbol=BTCUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:15m | Published kline event: symbol=BTCUSDT, timeframe=15m, close=105156.90
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:48 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.24
+2025-05-19 23:53:48 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.24
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:48 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.24
+2025-05-19 23:53:48 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.24
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:48 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:5m | Saved kline: symbol=BTCUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:48 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:48 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:5m | Published kline event: symbol=BTCUSDT, timeframe=5m, close=105156.90
+2025-05-19 23:53:49 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:15m | Saved kline: symbol=BTCUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:15m | Published kline event: symbol=BTCUSDT, timeframe=15m, close=105156.90
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:49 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.23
+2025-05-19 23:53:49 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.23
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:49 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:5m | Saved kline: symbol=BTCUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:5m | Published kline event: symbol=BTCUSDT, timeframe=5m, close=105156.90
+2025-05-19 23:53:49 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:15m | Saved kline: symbol=BTCUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:15m | Published kline event: symbol=BTCUSDT, timeframe=15m, close=105156.90
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:49 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.45
+2025-05-19 23:53:49 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.45
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:49 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:5m | Saved kline: symbol=BTCUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:5m | Published kline event: symbol=BTCUSDT, timeframe=5m, close=105157.00
+2025-05-19 23:53:49 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:15m | Saved kline: symbol=BTCUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:15m | Published kline event: symbol=BTCUSDT, timeframe=15m, close=105157.00
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:49 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.46
+2025-05-19 23:53:49 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.46
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:49 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:5m | Saved kline: symbol=BTCUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:5m | Published kline event: symbol=BTCUSDT, timeframe=5m, close=105157.00
+2025-05-19 23:53:49 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:15m | Saved kline: symbol=BTCUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:15m | Published kline event: symbol=BTCUSDT, timeframe=15m, close=105157.00
+2025-05-19 23:53:49 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.64
+2025-05-19 23:53:49 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.64
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:49 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:49 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.65
+2025-05-19 23:53:50 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.65
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:5m | Saved kline: symbol=BTCUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:5m | Published kline event: symbol=BTCUSDT, timeframe=5m, close=105156.90
+2025-05-19 23:53:50 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:15m | Saved kline: symbol=BTCUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:15m | Published kline event: symbol=BTCUSDT, timeframe=15m, close=105156.90
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.64
+2025-05-19 23:53:50 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.64
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:5m | Saved kline: symbol=BTCUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:5m | Published kline event: symbol=BTCUSDT, timeframe=5m, close=105157.00
+2025-05-19 23:53:50 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:15m | Saved kline: symbol=BTCUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:15m | Published kline event: symbol=BTCUSDT, timeframe=15m, close=105157.00
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:50 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.65
+2025-05-19 23:53:50 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:50 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:50 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.65
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:5m | Saved kline: symbol=BTCUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:5m | Published kline event: symbol=BTCUSDT, timeframe=5m, close=105156.90
+2025-05-19 23:53:51 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:15m | Saved kline: symbol=BTCUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:15m | Published kline event: symbol=BTCUSDT, timeframe=15m, close=105156.90
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.65
+2025-05-19 23:53:51 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.65
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:5m | Saved kline: symbol=BTCUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:5m | Published kline event: symbol=BTCUSDT, timeframe=5m, close=105156.90
+2025-05-19 23:53:51 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:15m | Saved kline: symbol=BTCUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:15m | Published kline event: symbol=BTCUSDT, timeframe=15m, close=105156.90
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2495.65
+2025-05-19 23:53:51 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2495.65
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:5m | Saved kline: symbol=BTCUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:5m | Published kline event: symbol=BTCUSDT, timeframe=5m, close=105156.90
+2025-05-19 23:53:51 | src.core.storage | DEBUG | storage:106 | symbol:BTCUSDT | timeframe:15m | Saved kline: symbol=BTCUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:104 | symbol:BTCUSDT | timeframe:15m | Published kline event: symbol=BTCUSDT, timeframe=15m, close=105156.90
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:BTCUSDT | timeframe:15m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:BTCUSDT | timeframe:15m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:15m | Saved kline: symbol=ETHUSDT, timeframe=15m, open_time=1747673100000
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:15m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:15m | Published kline event: symbol=ETHUSDT, timeframe=15m, close=2494.81
+2025-05-19 23:53:51 | src.core.storage | DEBUG | storage:106 | symbol:ETHUSDT | timeframe:5m | Saved kline: symbol=ETHUSDT, timeframe=5m, open_time=1747673400000
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type kline is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:104 | symbol:ETHUSDT | timeframe:5m | Published kline event: symbol=ETHUSDT, timeframe=5m, close=2494.81
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=ETHUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | src.core.events | DEBUG | events:194 | symbol:ETHUSDT | timeframe:5m | Event type order_book is disabled, skipping publish
+2025-05-19 23:53:51 | __main__ | DEBUG | main:130 | symbol:ETHUSDT | timeframe:5m | Published order_book event: symbol=BTCUSDT, bids=5, asks=5
+2025-05-19 23:53:51 | __main__ | INFO | main:199 | symbol:ETHUSDT | timeframe:5m | System shutdown

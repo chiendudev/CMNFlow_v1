@@ -48,7 +48,9 @@ def event_bus(settings):
 
 @pytest.fixture
 def exchange_client():
-    return AsyncMock(spec=ExchangeClient)
+    client = AsyncMock(spec=ExchangeClient)
+    client.get_account_info = AsyncMock(return_value={"marginRatio": 0.50})  # Mock margin ratio
+    return client
 
 @pytest.fixture
 def storage(settings, event_bus):
@@ -82,11 +84,26 @@ async def test_generate_buy_signal(signal_generator, event_bus):
         num_trades=100,
         is_closed=True,
         trades=[
-            {"trade_id": 1, "price": 50200.0, "quantity": 0.5, "timestamp": 1625097600000, "is_buyer_maker": True},
-            {"trade_id": 2, "price": 50150.0, "quantity": 0.3, "timestamp": 1625097601000, "is_buyer_maker": True},
-            {"trade_id": 3, "price": 50250.0, "quantity": 0.2, "timestamp": 1625097899000, "is_buyer_maker": False}
+            {"trade_id": 1, "price": 50200.0, "quantity": 0.5, "timestamp": 1625097600000, "is_buyer_maker": True, "last_update": 1625097600000},
+            {"trade_id": 2, "price": 50150.0, "quantity": 0.3, "timestamp": 1625097601000, "is_buyer_maker": True, "last_update": 1625097601000},
+            {"trade_id": 3, "price": 50250.0, "quantity": 0.2, "timestamp": 1625097899000, "is_buyer_maker": False, "last_update": 1625097899000}
         ]
     )
+    # Mock 26 klines để đáp ứng yêu cầu RSI, EMA
+    klines = [
+        {
+            "open_time": 1625097600000 - i * 300000,  # Giảm 5 phút mỗi kline
+            "close_time": 1625097900000 - i * 300000,
+            "open": 50000.0 - i * 10,
+            "high": 50500.0 - i * 10,
+            "low": 49500.0 - i * 10,
+            "close": 50200.0 - i * 10,
+            "volume": 1000.0,
+            "num_trades": 100,
+            "trades": kline.trades if i == 0 else []  # Chỉ kline mới nhất có trades
+        }
+        for i in range(26)
+    ]
     await event_bus.publish("kline", KlineEvent(
         type="kline",
         symbol="BTCUSDT",
@@ -115,17 +132,7 @@ async def test_generate_buy_signal(signal_generator, event_bus):
          patch.object(signal_generator.indicators, 'calculate_ema', side_effect=[50250.0, 50100.0]), \
          patch.object(signal_generator.indicators, 'calculate_atr', return_value=100.0), \
          patch.object(signal_generator.indicators, 'find_support_resistance', return_value=(50100.0, 51000.0)), \
-         patch.object(signal_generator.storage, 'get_klines', return_value=[{
-             "open_time": 1625097600000,
-             "close_time": 1625097900000,
-             "open": 50000.0,
-             "high": 50500.0,
-             "low": 49500.0,
-             "close": 50200.0,
-             "volume": 1000.0,
-             "num_trades": 100,
-             "trades": kline.trades
-         }]), \
+         patch.object(signal_generator.storage, 'get_klines', return_value=klines), \
          patch.object(signal_generator.storage, 'get_funding_rates', return_value=[{"funding_rate": -0.0002}]):
         signals = await signal_generator.generate_signals("BTCUSDT", "5m")
         print(f"Signals: {signals}")  # Debug
@@ -189,11 +196,26 @@ async def test_hedging_signals(signal_generator, event_bus):
         num_trades=100,
         is_closed=True,
         trades=[
-            {"trade_id": 1, "price": 50200.0, "quantity": 0.2, "timestamp": 1625097600000, "is_buyer_maker": False},
-            {"trade_id": 2, "price": 50150.0, "quantity": 0.3, "timestamp": 1625097601000, "is_buyer_maker": False},
-            {"trade_id": 3, "price": 50250.0, "quantity": 0.5, "timestamp": 1625097899000, "is_buyer_maker": True}
+            {"trade_id": 1, "price": 50200.0, "quantity": 0.2, "timestamp": 1625097600000, "is_buyer_maker": False, "last_update": 1625097600000},
+            {"trade_id": 2, "price": 50150.0, "quantity": 0.3, "timestamp": 1625097601000, "is_buyer_maker": False, "last_update": 1625097601000},
+            {"trade_id": 3, "price": 50250.0, "quantity": 0.5, "timestamp": 1625097899000, "is_buyer_maker": True, "last_update": 1625097899000}
         ]
     )
+    # Mock 26 klines
+    klines = [
+        {
+            "open_time": 1625097600000 - i * 300000,
+            "close_time": 1625097900000 - i * 300000,
+            "open": 50000.0 - i * 10,
+            "high": 50500.0 - i * 10,
+            "low": 49500.0 - i * 10,
+            "close": 50200.0 - i * 10,
+            "volume": 1000.0,
+            "num_trades": 100,
+            "trades": kline.trades if i == 0 else []
+        }
+        for i in range(26)
+    ]
     await event_bus.publish("kline", KlineEvent(
         type="kline",
         symbol="BTCUSDT",
@@ -222,17 +244,7 @@ async def test_hedging_signals(signal_generator, event_bus):
          patch.object(signal_generator.indicators, 'calculate_ema', side_effect=[50150.0, 50300.0]), \
          patch.object(signal_generator.indicators, 'calculate_atr', return_value=100.0), \
          patch.object(signal_generator.indicators, 'find_support_resistance', return_value=(49000.0, 50300.0)), \
-         patch.object(signal_generator.storage, 'get_klines', return_value=[{
-             "open_time": 1625097600000,
-             "close_time": 1625097900000,
-             "open": 50000.0,
-             "high": 50500.0,
-             "low": 49500.0,
-             "close": 50200.0,
-             "volume": 1000.0,
-             "num_trades": 100,
-             "trades": kline.trades
-         }]), \
+         patch.object(signal_generator.storage, 'get_klines', return_value=klines), \
          patch.object(signal_generator.storage, 'get_funding_rates', return_value=[{"funding_rate": 0.0002}]):
         signals = await signal_generator.generate_signals("BTCUSDT", "5m")
         print(f"Signals: {signals}")  # Debug
