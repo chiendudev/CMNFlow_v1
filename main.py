@@ -29,7 +29,6 @@
 #     #     await storage.save_all()
 
 import asyncio
-from logging_config import setup_logging
 import logging
 from src.core.settings import Settings
 from src.core.events import EventBus
