@@ -43,6 +43,5 @@ logger = logging.getLogger(__name__)
 if __name__ == "__main__":
     settings = Settings()
     setup_logging(settings)
-    event_bus = EventBus(settings)
 
     print("MAIN RUN")
