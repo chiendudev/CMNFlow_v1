@@ -1,0 +1,2 @@
+2025-05-19 20:28:29 | root | INFO | logging_config:83 | symbol:- | timeframe:- | Logging initialized: level=DEBUG, directory=logs, rotation_size=10MB
+2025-05-19 20:28:29 | src.core.events | INFO | events:158 | symbol:- | timeframe:- | Initialized EventBus with enabled events: []

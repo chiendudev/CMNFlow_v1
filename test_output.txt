@@ -1,0 +1,278 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.9, pytest-8.3.5, pluggy-1.6.0 -- /Users/chiendu/PycharmProjects/pythonProject/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/chiendu/PycharmProjects/CMNFlow_v1
+configfile: pytest.ini
+plugins: anyio-4.9.0, asyncio-0.26.0
+asyncio: mode=Mode.AUTO, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 3 items
+
+tests/test_integration.py::test_generate_buy_signal 
+-------------------------------- live log setup --------------------------------
+INFO     src.core.events:events.py:158 Initialized EventBus with enabled events: ['kline', 'order_book', 'funding_rate', 'signal']
+INFO     src.core.events:events.py:158 Initialized EventBus with enabled events: ['kline', 'order_book', 'funding_rate', 'signal']
+INFO     src.trading.portfolio:portfolio.py:36 Initialized Portfolio for symbols: ['BTCUSDT']
+INFO     src.trading.risk:risk.py:34 Initialized RiskManager with max_risk=1.00%, max_margin_ratio=80.00%
+INFO     src.strategy.signals:signals.py:24 Initialized SignalGenerator with timeframes=['5m']
+DEBUG    asyncio:selector_events.py:64 Using selector: KqueueSelector
+DEBUG    asyncio:selector_events.py:64 Using selector: KqueueSelector
+-------------------------------- live log call ---------------------------------
+DEBUG    src.core.events:events.py:199 No subscribers for event kline
+DEBUG    src.core.events:events.py:199 No subscribers for event funding_rate
+ERROR    src.trading.portfolio:portfolio.py:127 Failed to get margin ratio: Mock object has no attribute 'get_account_info'
+WARNING  src.strategy.signals:signals.py:54 Insufficient kline data: got=1
+FAILED
+------------------------------ live log teardown -------------------------------
+DEBUG    asyncio:selector_events.py:64 Using selector: KqueueSelector
+
+tests/test_integration.py::test_no_signal_high_margin_ratio 
+-------------------------------- live log setup --------------------------------
+INFO     src.core.events:events.py:158 Initialized EventBus with enabled events: ['kline', 'order_book', 'funding_rate', 'signal']
+INFO     src.core.events:events.py:158 Initialized EventBus with enabled events: ['kline', 'order_book', 'funding_rate', 'signal']
+INFO     src.trading.portfolio:portfolio.py:36 Initialized Portfolio for symbols: ['BTCUSDT']
+INFO     src.trading.risk:risk.py:34 Initialized RiskManager with max_risk=1.00%, max_margin_ratio=80.00%
+INFO     src.strategy.signals:signals.py:24 Initialized SignalGenerator with timeframes=['5m']
+DEBUG    asyncio:selector_events.py:64 Using selector: KqueueSelector
+-------------------------------- live log call ---------------------------------
+DEBUG    src.core.events:events.py:199 No subscribers for event kline
+WARNING  src.strategy.signals:signals.py:48 Margin ratio too high: 85.00%, skipping signal generation
+PASSED
+------------------------------ live log teardown -------------------------------
+DEBUG    asyncio:selector_events.py:64 Using selector: KqueueSelector
+
+tests/test_integration.py::test_hedging_signals 
+-------------------------------- live log setup --------------------------------
+INFO     src.core.events:events.py:158 Initialized EventBus with enabled events: ['kline', 'order_book', 'funding_rate', 'signal']
+INFO     src.core.events:events.py:158 Initialized EventBus with enabled events: ['kline', 'order_book', 'funding_rate', 'signal']
+INFO     src.trading.portfolio:portfolio.py:36 Initialized Portfolio for symbols: ['BTCUSDT']
+INFO     src.trading.risk:risk.py:34 Initialized RiskManager with max_risk=1.00%, max_margin_ratio=80.00%
+INFO     src.strategy.signals:signals.py:24 Initialized SignalGenerator with timeframes=['5m']
+DEBUG    asyncio:selector_events.py:64 Using selector: KqueueSelector
+-------------------------------- live log call ---------------------------------
+DEBUG    src.core.events:events.py:199 No subscribers for event kline
+DEBUG    src.core.events:events.py:199 No subscribers for event funding_rate
+ERROR    src.trading.portfolio:portfolio.py:127 Failed to get margin ratio: Mock object has no attribute 'get_account_info'
+WARNING  src.strategy.signals:signals.py:54 Insufficient kline data: got=1
+FAILED
+------------------------------ live log teardown -------------------------------
+DEBUG    asyncio:selector_events.py:64 Using selector: KqueueSelector
+
+
+=================================== FAILURES ===================================
+___________________________ test_generate_buy_signal ___________________________
+
+signal_generator = <src.strategy.signals.SignalGenerator object at 0x10347f230>
+event_bus = <src.core.events.EventBus object at 0x1035dec00>
+
+    @pytest.mark.asyncio
+    async def test_generate_buy_signal(signal_generator, event_bus):
+           kline = Kline(
+               symbol="BTCUSDT",
+               timeframe="5m",
+               open_time=1625097600000,
+               close_time=1625097900000,
+               open=50000.0,
+               high=50500.0,
+               low=49500.0,
+               close=50200.0,
+               volume=1000.0,
+               num_trades=100,
+               is_closed=True
+           )
+           await event_bus.publish("kline", KlineEvent(
+               type="kline",
+               symbol="BTCUSDT",
+               timeframe="5m",
+               open_time=kline.open_time,
+               close_time=kline.close_time,
+               open=kline.open,
+               high=kline.high,
+               low=kline.low,
+               close=kline.close,
+               volume=kline.volume,
+               num_trades=kline.num_trades,
+               is_closed=True,
+               timestamp=1625097600000,
+               data={}
+           ))
+           await event_bus.publish("funding_rate", FundingRateEvent(
+               type="funding_rate",
+               symbol="BTCUSDT",
+               funding_rate=-0.0002,
+               timestamp=1625097600000,
+               data={}
+           ))
+    
+           # Mock indicators and storage
+           with patch.object(signal_generator.indicators, 'calculate_rsi', return_value=25.0), \
+                patch.object(signal_generator.indicators, 'calculate_ema', side_effect=[50250.0, 50100.0]), \
+                patch.object(signal_generator.indicators, 'calculate_atr', return_value=100.0), \
+                patch.object(signal_generator.indicators, 'find_support_resistance', return_value=(50100.0, 51000.0)), \
+                patch.object(signal_generator.storage, 'get_klines', return_value=[{
+                    "open_time": 1625097600000,
+                    "close_time": 1625097900000,
+                    "open": 50000.0,
+                    "high": 50500.0,
+                    "low": 49500.0,
+                    "close": 50200.0,
+                    "volume": 1000.0,
+                    "num_trades": 100
+                }]), \
+                patch.object(signal_generator.storage, 'get_funding_rates', return_value=[{"funding_rate": -0.0002}]):
+               signals = await signal_generator.generate_signals("BTCUSDT", "5m")
+    
+>          assert len(signals) > 0
+E          assert 0 > 0
+E           +  where 0 = len([])
+
+tests/test_integration.py:124: AssertionError
+------------------------------ Captured log setup ------------------------------
+INFO     src.core.events:events.py:158 Initialized EventBus with enabled events: ['kline', 'order_book', 'funding_rate', 'signal']
+INFO     src.core.events:events.py:158 Initialized EventBus with enabled events: ['kline', 'order_book', 'funding_rate', 'signal']
+INFO     src.trading.portfolio:portfolio.py:36 Initialized Portfolio for symbols: ['BTCUSDT']
+INFO     src.trading.risk:risk.py:34 Initialized RiskManager with max_risk=1.00%, max_margin_ratio=80.00%
+INFO     src.strategy.signals:signals.py:24 Initialized SignalGenerator with timeframes=['5m']
+DEBUG    asyncio:selector_events.py:64 Using selector: KqueueSelector
+DEBUG    asyncio:selector_events.py:64 Using selector: KqueueSelector
+------------------------------ Captured log call -------------------------------
+DEBUG    src.core.events:events.py:199 No subscribers for event kline
+DEBUG    src.core.events:events.py:199 No subscribers for event funding_rate
+ERROR    src.trading.portfolio:portfolio.py:127 Failed to get margin ratio: Mock object has no attribute 'get_account_info'
+WARNING  src.strategy.signals:signals.py:54 Insufficient kline data: got=1
+---------------------------- Captured log teardown -----------------------------
+DEBUG    asyncio:selector_events.py:64 Using selector: KqueueSelector
+_____________________________ test_hedging_signals _____________________________
+
+signal_generator = <src.strategy.signals.SignalGenerator object at 0x103632690>
+event_bus = <src.core.events.EventBus object at 0x10360e060>
+
+    @pytest.mark.asyncio
+    async def test_hedging_signals(signal_generator, event_bus):
+           kline = Kline(
+               symbol="BTCUSDT",
+               timeframe="5m",
+               open_time=1625097600000,
+               close_time=1625097900000,
+               open=50000.0,
+               high=50500.0,
+               low=49500.0,
+               close=50200.0,
+               volume=1000.0,
+               num_trades=100,
+               is_closed=True
+           )
+           await event_bus.publish("kline", KlineEvent(
+               type="kline",
+               symbol="BTCUSDT",
+               timeframe="5m",
+               open_time=kline.open_time,
+               close_time=kline.close_time,
+               open=kline.open,
+               high=kline.high,
+               low=kline.low,
+               close=kline.close,
+               volume=kline.volume,
+               num_trades=kline.num_trades,
+               is_closed=True,
+               timestamp=1625097600000,
+               data={}
+           ))
+           await event_bus.publish("funding_rate", FundingRateEvent(
+               type="funding_rate",
+               symbol="BTCUSDT",
+               funding_rate=0.0002,
+               timestamp=1625097600000,
+               data={}
+           ))
+    
+           # Mock indicators and storage
+           with patch.object(signal_generator.indicators, 'calculate_rsi', return_value=75.0), \
+                patch.object(signal_generator.indicators, 'calculate_ema', side_effect=[50150.0, 50300.0]), \
+                patch.object(signal_generator.indicators, 'calculate_atr', return_value=100.0), \
+                patch.object(signal_generator.indicators, 'find_support_resistance', return_value=(49000.0, 50300.0)), \
+                patch.object(signal_generator.storage, 'get_klines', return_value=[{
+                    "open_time": 1625097600000,
+                    "close_time": 1625097900000,
+                    "open": 50000.0,
+                    "high": 50500.0,
+                    "low": 49500.0,
+                    "close": 50200.0,
+                    "volume": 1000.0,
+                    "num_trades": 100
+                }]), \
+                patch.object(signal_generator.storage, 'get_funding_rates', return_value=[{"funding_rate": 0.0002}]):
+               signals = await signal_generator.generate_signals("BTCUSDT", "5m")
+    
+>          assert len(signals) > 0
+E          assert 0 > 0
+E           +  where 0 = len([])
+
+tests/test_integration.py:224: AssertionError
+------------------------------ Captured log setup ------------------------------
+INFO     src.core.events:events.py:158 Initialized EventBus with enabled events: ['kline', 'order_book', 'funding_rate', 'signal']
+INFO     src.core.events:events.py:158 Initialized EventBus with enabled events: ['kline', 'order_book', 'funding_rate', 'signal']
+INFO     src.trading.portfolio:portfolio.py:36 Initialized Portfolio for symbols: ['BTCUSDT']
+INFO     src.trading.risk:risk.py:34 Initialized RiskManager with max_risk=1.00%, max_margin_ratio=80.00%
+INFO     src.strategy.signals:signals.py:24 Initialized SignalGenerator with timeframes=['5m']
+DEBUG    asyncio:selector_events.py:64 Using selector: KqueueSelector
+------------------------------ Captured log call -------------------------------
+DEBUG    src.core.events:events.py:199 No subscribers for event kline
+DEBUG    src.core.events:events.py:199 No subscribers for event funding_rate
+ERROR    src.trading.portfolio:portfolio.py:127 Failed to get margin ratio: Mock object has no attribute 'get_account_info'
+WARNING  src.strategy.signals:signals.py:54 Insufficient kline data: got=1
+---------------------------- Captured log teardown -----------------------------
+DEBUG    asyncio:selector_events.py:64 Using selector: KqueueSelector
+=============================== warnings summary ===============================
+tests/test_integration.py::test_generate_buy_signal
+tests/test_integration.py::test_no_signal_high_margin_ratio
+tests/test_integration.py::test_hedging_signals
+  /Users/chiendu/PycharmProjects/CMNFlow_v1/src/trading/portfolio.py:32: RuntimeWarning: coroutine 'EventBus.subscribe' was never awaited
+    self.event_bus.subscribe("signal", self._handle_signal, priority=2)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_integration.py::test_generate_buy_signal
+tests/test_integration.py::test_no_signal_high_margin_ratio
+tests/test_integration.py::test_hedging_signals
+  /Users/chiendu/PycharmProjects/CMNFlow_v1/src/trading/portfolio.py:33: RuntimeWarning: coroutine 'EventBus.subscribe' was never awaited
+    self.event_bus.subscribe("mark_price", self._handle_mark_price, priority=2)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_integration.py::test_generate_buy_signal
+tests/test_integration.py::test_no_signal_high_margin_ratio
+tests/test_integration.py::test_hedging_signals
+  /Users/chiendu/PycharmProjects/CMNFlow_v1/src/trading/portfolio.py:34: RuntimeWarning: coroutine 'EventBus.subscribe' was never awaited
+    self.event_bus.subscribe("liquidation", self._handle_liquidation, priority=2)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_integration.py::test_generate_buy_signal
+tests/test_integration.py::test_no_signal_high_margin_ratio
+tests/test_integration.py::test_hedging_signals
+  /Users/chiendu/PycharmProjects/CMNFlow_v1/src/trading/portfolio.py:35: RuntimeWarning: coroutine 'EventBus.subscribe' was never awaited
+    self.event_bus.subscribe("order", self._handle_order, priority=2)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_integration.py::test_generate_buy_signal
+tests/test_integration.py::test_no_signal_high_margin_ratio
+tests/test_integration.py::test_hedging_signals
+  /Users/chiendu/PycharmProjects/CMNFlow_v1/src/trading/risk.py:33: RuntimeWarning: coroutine 'EventBus.subscribe' was never awaited
+    self.event_bus.subscribe("mark_price", self._handle_mark_price, priority=3)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_integration.py::test_generate_buy_signal
+tests/test_integration.py::test_no_signal_high_margin_ratio
+tests/test_integration.py::test_hedging_signals
+  /Users/chiendu/PycharmProjects/CMNFlow_v1/src/strategy/signals.py:23: RuntimeWarning: coroutine 'EventBus.subscribe' was never awaited
+    self.event_bus.subscribe("kline", self._handle_kline, priority=1)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_integration.py::test_generate_buy_signal - assert 0 > 0
+FAILED tests/test_integration.py::test_hedging_signals - assert 0 > 0
+=================== 2 failed, 1 passed, 18 warnings in 0.56s ===================
