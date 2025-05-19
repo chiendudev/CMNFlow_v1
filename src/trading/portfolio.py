@@ -21,14 +21,19 @@ class Position:
         self.trailing_stop = trailing_stop
 
 class Portfolio:
-    def __init__(self, settings: Settings, exchange_client: ExchangeClient):
+    def __init__(self, settings: Settings, exchange_client: ExchangeClient, event_bus: EventBus):
         self.settings = settings
         self.exchange_client = exchange_client
         self.balance: float = 100000.0  # Giả định số dư ban đầu
         self.positions: Dict[str, Position] = {}
-        self.event_bus = EventBus(settings)
-        self._initialize_subscribers()
+        self.event_bus = event_bus
         logger.info("Initialized Portfolio for symbols: %s", settings.symbols)
+
+    async def initialize(self):
+        """Khởi tạo các subscriber bất đồng bộ."""
+        set_log_context()
+        await self._initialize_subscribers()
+        logger.debug("Portfolio subscribers initialized")
 
     async def _initialize_subscribers(self):
         """Đăng ký sự kiện order."""

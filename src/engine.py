@@ -22,8 +22,13 @@ class TradingEngine:
         self.risk_manager = risk_manager
         self.storage = storage
         self.active_orders: Dict[str, Order] = {}
-        self._initialize_subscribers()
         logger.info("Initialized TradingEngine for symbols: %s", settings.symbols)
+
+    async def initialize(self):
+        """Khởi tạo các subscriber bất đồng bộ."""
+        set_log_context()
+        await self._initialize_subscribers()
+        logger.debug("TradingEngine subscribers initialized")
 
     async def _initialize_subscribers(self):
         """Đăng ký các sự kiện."""

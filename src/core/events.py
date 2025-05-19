@@ -71,6 +71,7 @@ class OrderBookEvent(Event):
 @dataclass(kw_only=True)
 class FundingRateEvent(Event):
     funding_rate: float
+    funding_time: int
 
     def __post_init__(self):
         super().__post_init__()
@@ -151,11 +152,23 @@ class PositionEvent(Event):
             raise ValueError("Action must be OPEN, UPDATE, or CLOSE")
 
 class EventBus:
+    _instance = None
+
+    def __new__(cls, settings: Settings):
+        if cls._instance is None:
+            cls._instance = super(EventBus, cls).__new__(cls)
+            cls._instance.__initialized = False
+        return cls._instance
+
     def __init__(self, settings: Settings):
+        if self.__initialized:
+            logger.debug("EventBus already initialized, reusing instance")
+            return
         self.settings = settings
         self.subscribers: Dict[str, List[Dict[str, Any]]] = {}
         self.lock = asyncio.Lock()
         logger.info("Initialized EventBus with enabled events: %s", settings.enabled_events)
+        self.__initialized = True
 
     async def subscribe(self, event_type: str, handler: Callable, priority: int = 0, filter_func: Optional[Callable] = None) -> str:
         """Đăng ký handler cho sự kiện với ưu tiên và bộ lọc."""

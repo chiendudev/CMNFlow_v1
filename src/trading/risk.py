@@ -32,9 +32,14 @@ class RiskManager:
         self.sl_atr_multiplier = settings.sl_atr_multiplier
         self.tp_atr_multiplier = settings.tp_atr_multiplier
         self.trailing_stop_distance = settings.trailing_stop_distance
-        self._initialize_subscribers()
         logger.info("Initialized RiskManager with max_risk=%.2f%%, max_margin_ratio=%.2f%%",
                     self.max_risk_per_trade * 100, self.max_margin_ratio * 100)
+
+    async def initialize(self):
+        """Khởi tạo các subscriber bất đồng bộ."""
+        set_log_context()
+        await self._initialize_subscribers()
+        logger.debug("RiskManager subscribers initialized")
 
     async def _initialize_subscribers(self):
         """Đăng ký sự kiện mark_price."""

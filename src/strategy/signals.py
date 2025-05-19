@@ -4,7 +4,7 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 from src.core.settings import Settings
-from src.core.events import EventBus, SignalEvent, KlineEvent
+from src.core.events import EventBus, SignalEvent, KlineEvent, OrderBookEvent, FundingRateEvent
 from src.core.storage import Storage
 from src.core.logging_config import get_logger, set_log_context
 from src.trading.orders import Order, OCOOrder
@@ -13,6 +13,7 @@ from src.trading.portfolio import Portfolio
 from src.trading.risk import RiskManager
 from src.strategy.confluence import Confluence
 from src.strategy.trade_analyzer import TradeAnalyzer
+from src.strategy.indicators import Indicators
 
 logger = get_logger(__name__)
 
@@ -31,20 +32,39 @@ class SignalGenerator:
         self.portfolio = portfolio
         self.storage = storage
         self.risk_manager = risk_manager
-        self.confluence = Confluence(settings, storage)
-        self.trade_analyzer = TradeAnalyzer(settings, storage)
-        self._initialize_subscribers()
+        self.confluence = Confluence(settings, Indicators())
+        self.trade_analyzer = TradeAnalyzer()
         logger.info("Initialized SignalGenerator with symbols=%s, timeframes=%s",
                     settings.symbols, settings.timeframes)
+
+    async def initialize(self):
+        """Khởi tạo các subscriber bất đồng bộ."""
+        set_log_context()
+        await self._initialize_subscribers()
+        logger.debug("SignalGenerator subscribers initialized")
 
     async def _initialize_subscribers(self):
         """Đăng ký các sự kiện."""
         set_log_context()
         await self.event_bus.subscribe("kline", self._handle_kline, priority=2)
+        await self.event_bus.subscribe("order_book", self._handle_order_book, priority=1)
+        await self.event_bus.subscribe("funding_rate", self._handle_funding_rate, priority=1)
+
+    async def _handle_order_book(self, event: OrderBookEvent):
+        logger.debug(f"Processing order_book: symbol={event.symbol}, bids={len(event.bids)}, asks={len(event.asks)}")
+        # Logic xử lý sổ lệnh, ví dụ: tính spread
+        spread = event.asks[0][0] - event.bids[0][0]
+        if spread > self.settings.max_spread:
+            logger.warning(f"High spread for {event.symbol}: {spread}")
+
+    async def _handle_funding_rate(self, event: FundingRateEvent):
+        logger.debug(f"Processing order_book: symbol={event.symbol}, funding rate: {event.funding_rate}")
 
     async def _handle_kline(self, event: KlineEvent):
         """Xử lý sự kiện kline để tạo tín hiệu."""
+        logger.debug(f"Received kline: symbol={event.symbol}, timeframe={event.timeframe}, is_closed={event.is_closed}")
         if not event.is_closed:
+            logger.debug(f"Skipping unclosed kline for {event.symbol}")
             return
 
         symbol = event.symbol
@@ -53,6 +73,8 @@ class SignalGenerator:
 
         try:
             signals = await self.generate_signals(symbol, timeframe)
+            if not signals:
+                logger.debug(f"No signals generated for {symbol} on {timeframe}")
             for signal in signals:
                 signal_event = SignalEvent(
                     type="signal",

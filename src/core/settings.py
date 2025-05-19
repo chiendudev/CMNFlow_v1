@@ -2,9 +2,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 
 class Settings(BaseSettings):
+    max_spread: float = 0.001
     symbols: List[str] = ['BTCUSDT']
-    api_key: str = "test_api_key"
-    api_secret: str = "test_api_secret"
+    api_key: str = "a49a6fa8cf4a82c38606625cf56bbfae4cfdd94fd45cc0b24cb30b409096257f"
+    api_secret: str = "eadf55a688758a5cf382217d070e632ec12bb6bffef48653446a71521cc442b9"
     timeframes: List[str] = ['5m']
     base_timeframe: str = ['1m']
     rsi_period: int = 14
@@ -36,7 +37,7 @@ class Settings(BaseSettings):
     max_margin_ratio: float = 0.80
     correlation_threshold: float = 0.80
     volatility_threshold: float = 0.02
-    enabled_events: List[str] = []
+    enabled_events: List[str] = ['kline', 'order_book', 'funding_rate', 'signal', 'order']
     log_level: str = "DEBUG"
     log_directory: str = "logs"
     log_rotation_size: int = 10485760
