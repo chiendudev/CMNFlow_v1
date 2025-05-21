@@ -1,208 +1,131 @@
-import logging
 import asyncio
-from typing import List, Dict, Any, Optional
-from datetime import datetime
-
+import logging
+from typing import Optional, Dict
+from collections import deque
+import numpy as np
+from src.core.events import EventBus, KlineEvent, FundingRateEvent, TradeEvent
 from src.core.settings import Settings
-from src.core.events import EventBus, SignalEvent, KlineEvent, OrderBookEvent, FundingRateEvent
-from src.core.storage import Storage
-from src.core.logging_config import get_logger, set_log_context
-from src.trading.orders import Order, OCOOrder
-from src.trading.enums import OrderSide, PositionSide, OrderType
 from src.trading.portfolio import Portfolio
 from src.trading.risk import RiskManager
-from src.strategy.confluence import Confluence
-from src.strategy.trade_analyzer import TradeAnalyzer
+from src.core.storage import Storage
 from src.strategy.indicators import Indicators
+from src.strategy.confluence import Confluence
 
-logger = get_logger(__name__)
-
+logger = logging.getLogger(__name__)
 
 class SignalGenerator:
-    def __init__(
-            self,
-            settings: Settings,
-            event_bus: EventBus,
-            portfolio: Portfolio,
-            storage: Storage,
-            risk_manager: RiskManager
-    ):
+    def __init__(self, settings: Settings, event_bus: EventBus, portfolio: Portfolio, storage: Storage, risk_manager: RiskManager):
         self.settings = settings
         self.event_bus = event_bus
         self.portfolio = portfolio
         self.storage = storage
         self.risk_manager = risk_manager
-        self.confluence = Confluence(settings, Indicators())
-        self.trade_analyzer = TradeAnalyzer()
-        logger.info("Initialized SignalGenerator with symbols=%s, timeframes=%s",
-                    settings.symbols, settings.timeframes)
+        self.confluence_count = 0
+        self.trade_cache = {symbol: deque(maxlen=5000) for symbol in settings.symbols}
+        self.kline_cache = {symbol: {tf: deque(maxlen=100) for tf in settings.timeframes} for symbol in settings.symbols}
+        self.indicators = Indicators()
+        self.confluence = Confluence(settings, self.indicators)
+        self.min_trades = getattr(settings, 'min_trades', 500)
+        self.max_trades = getattr(settings, 'max_trades', 1000)
+        self.volatility_threshold = getattr(settings, 'volatility_threshold', 0.01)
+        self.max_timeframe_ms = 5 * 60 * 1000
 
     async def initialize(self):
-        """Khởi tạo các subscriber bất đồng bộ."""
-        set_log_context()
         await self._initialize_subscribers()
-        logger.debug("SignalGenerator subscribers initialized")
+        logger.info("SignalGenerator initialized")
 
     async def _initialize_subscribers(self):
-        """Đăng ký các sự kiện."""
-        set_log_context()
         await self.event_bus.subscribe("kline", self._handle_kline, priority=2)
-        await self.event_bus.subscribe("order_book", self._handle_order_book, priority=1)
         await self.event_bus.subscribe("funding_rate", self._handle_funding_rate, priority=1)
-
-    async def _handle_order_book(self, event: OrderBookEvent):
-        logger.debug(f"Processing order_book: symbol={event.symbol}, bids={len(event.bids)}, asks={len(event.asks)}")
-        # Logic xử lý sổ lệnh, ví dụ: tính spread
-        spread = event.asks[0][0] - event.bids[0][0]
-        if spread > self.settings.max_spread:
-            logger.warning(f"High spread for {event.symbol}: {spread}")
-
-    async def _handle_funding_rate(self, event: FundingRateEvent):
-        logger.debug(f"Processing order_book: symbol={event.symbol}, funding rate: {event.funding_rate}")
+        await self.event_bus.subscribe("trade", self._handle_trade, priority=1)
 
     async def _handle_kline(self, event: KlineEvent):
-        """Xử lý sự kiện kline để tạo tín hiệu."""
-        logger.debug(f"Received kline: symbol={event.symbol}, timeframe={event.timeframe}, is_closed={event.is_closed}")
         if not event.is_closed:
-            logger.debug(f"Skipping unclosed kline for {event.symbol}")
             return
-
         symbol = event.symbol
         timeframe = event.timeframe
-        set_log_context(symbol=symbol, timeframe=timeframe)
+        self.kline_cache[symbol][timeframe].append(event)
+        logger.debug(f"Processing kline: symbol={symbol}, timeframe={timeframe}, close={event.close}")
 
-        try:
-            signals = await self.generate_signals(symbol, timeframe)
-            if not signals:
-                logger.debug(f"No signals generated for {symbol} on {timeframe}")
-            for signal in signals:
-                signal_event = SignalEvent(
-                    type="signal",
-                    symbol=symbol,
-                    timeframe=timeframe,
-                    timestamp=int(datetime.now().timestamp() * 1000),
-                    data=signal
-                )
-                await self.event_bus.publish("signal", signal_event)
-                logger.info("Generated %s signal: symbol=%s, entry=%.2f, sl=%.2f, tp=%.2f, strategy=%s",
-                            signal["type"], symbol, signal["entry"], signal["stop_loss"], signal["take_profit"],
-                            signal["strategy"])
-        except Exception as e:
-            logger.error("Error generating signals for %s: %s", symbol, e)
+    async def _handle_funding_rate(self, event: FundingRateEvent):
+        logger.debug(f"Processing funding_rate: symbol={event.symbol}, rate={event.funding_rate}")
 
-    async def generate_signals(self, symbol: str, timeframe: str) -> List[Dict[str, Any]]:
-        """Tạo tín hiệu giao dịch dựa trên Confluence và TradeAnalyzer."""
-        signals = []
+    async def _handle_trade(self, event: TradeEvent):
+        symbol = event.symbol
+        timestamp = event.timestamp
+        self.trade_cache[symbol].append(event)
+        logger.debug(f"Processing trade: symbol={symbol}, price={event.data['p']}, quantity={event.data['q']}")
 
-        # Lấy dữ liệu
-        klines = self.storage.get_klines(symbol, timeframe, limit=self.settings.max_klines)
-        if len(klines) < max(self.settings.rsi_period, self.settings.ema_slow_period):
-            logger.warning("Insufficient klines for %s: got %d, need %d", symbol, len(klines),
-                           max(self.settings.rsi_period, self.settings.ema_slow_period))
-            return signals
+        trades = list(self.trade_cache[symbol])
+        target_trades = self.min_trades
+        if len(trades) < target_trades:
+            additional_trades = await self.storage.get_agg_trades_by_count(
+                symbol, timestamp, target_trades - len(trades)
+            )
+            trades = additional_trades + trades
 
-        trades = await self.trade_analyzer.get_trades(symbol)
-        if not trades:
-            logger.debug("No trades available for %s", symbol)
-            return signals
+        if len(trades) < target_trades:
+            logger.debug(f"Insufficient trades for {symbol}: got {len(trades)}, need {target_trades}")
+            return
 
-        # Đánh giá Confluence
-        confluence_result = await self.confluence.evaluate(symbol, timeframe, klines, trades)
-        if not confluence_result.is_valid or confluence_result.condition_count < self.settings.min_confluence_count:
-            logger.debug("Confluence invalid for %s: is_valid=%s, condition_count=%d",
-                         symbol, confluence_result.is_valid, confluence_result.condition_count)
-            return signals
+        prices = np.array([float(t.data["p"]) for t in trades])
+        max_price, min_price = prices.max(), prices.min()
+        avg_price = prices.mean()
+        volatility = (max_price - min_price) / avg_price if avg_price > 0 else 0
 
-        # Tạo tín hiệu
-        direction = confluence_result.direction
-        strategy = confluence_result.strategy
-        current_price = klines[-1].close
+        if volatility > self.volatility_threshold:
+            target_trades = self.min_trades  # Scalping
+        elif volatility < 0.005:
+            target_trades = 5000  # 1h
+        else:
+            target_trades = 2000  # Swing
+        if len(trades) > target_trades:
+            trades = trades[-target_trades:]
+        elif len(trades) < target_trades:
+            additional_trades = await self.storage.get_agg_trades_by_count(
+                symbol, timestamp, target_trades - len(trades)
+            )
+            trades = additional_trades + trades
+            if len(trades) > target_trades:
+                trades = trades[-target_trades:]
 
-        # Tính SL/TP
-        stop_loss, take_profit = self.risk_manager.calculate_sl_tp(
-            symbol, current_price, "LONG" if direction == "buy" else "SHORT"
-        )
-        if stop_loss == current_price or take_profit == current_price:
-            logger.warning("Invalid SL/TP for %s: SL=%.2f, TP=%.2f", symbol, stop_loss, take_profit)
-            return signals
+        max_time = 5 * 60 * 1000 if volatility > 0.01 else 15 * 60 * 1000
+        if trades:
+            earliest_time = min(t.timestamp for t in trades)
+            if timestamp - earliest_time > max_time:
+                trades = [t for t in trades if timestamp - t.timestamp <= max_time]
 
-        # Tạo lệnh mẫu để kiểm tra rủi ro
-        position_size = self.risk_manager.calculate_position_size(symbol, current_price, stop_loss)
-        if position_size <= 0:
-            logger.warning("Invalid position size for %s: %.4f", symbol, position_size)
-            return signals
+        if len(trades) < self.min_trades:
+            logger.debug(f"Insufficient trades after trimming for {symbol}: got {len(trades)}")
+            return
 
-        order = Order(
-            symbol=symbol,
-            side=OrderSide.BUY if direction == "buy" else OrderSide.SELL,
-            position_side=PositionSide.LONG if direction == "buy" else PositionSide.SHORT,
-            type=OrderType.MARKET,
-            quantity=position_size,
-            price=current_price,
-            reduce_only=False
-        )
-
-        # Kiểm tra rủi ro
-        is_valid, reason = await self.risk_manager.check_risk(order)
-        if not is_valid:
-            logger.warning("Risk check failed for %s: %s", symbol, reason)
-            return signals
-
-        # Tạo tín hiệu
-        signal = {
-            "type": direction,
-            "entry": current_price,
-            "stop_loss": stop_loss,
-            "take_profit": take_profit,
-            "strategy": strategy,
-            "timestamp": int(datetime.now().timestamp() * 1000)
+        signal_data = {
+            "symbol": symbol,
+            "volatility": volatility,
+            "trades": len(trades)
         }
-        signals.append(signal)
 
-        # Tạo tín hiệu hedging nếu cần
-        if self.settings.hedging_mode:
-            hedge_direction = "sell" if direction == "buy" else "buy"
-            hedge_stop_loss, hedge_take_profit = self.risk_manager.calculate_sl_tp(
-                symbol, current_price, "SHORT" if hedge_direction == "sell" else "LONG"
-            )
-            if hedge_stop_loss == current_price or hedge_take_profit == current_price:
-                logger.warning("Invalid hedge SL/TP for %s: SL=%.2f, TP=%.2f", symbol, hedge_stop_loss,
-                               hedge_take_profit)
-                return signals
+        # Đánh giá confluence cho mỗi khung
+        for timeframe in self.settings.timeframes:
+            if not self.kline_cache[symbol].get(timeframe):
+                continue
+            klines = [{"close": k.close, "volume": k.volume, "trades": [t.__dict__ for t in trades]}
+                      for k in self.kline_cache[symbol][timeframe]]
+            funding_rate = None  # Cần lấy từ storage hoặc event_bus
+            confluence_result = await self.confluence.evaluate(symbol, timeframe, klines, trades)
+            if confluence_result["is_valid"]:
+                signal_data["direction"] = confluence_result["direction"]
+                signal_data["strategy"] = confluence_result["strategy"]
+                signal_data[f"confluence_{timeframe}"] = confluence_result
+                break  # Ưu tiên khung có tín hiệu hợp lệ đầu tiên
 
-            hedge_position_size = self.risk_manager.calculate_position_size(symbol, current_price, hedge_stop_loss)
-            if hedge_position_size <= 0:
-                logger.warning("Invalid hedge position size for %s: %.4f", symbol, hedge_position_size)
-                return signals
-
-            hedge_order = Order(
-                symbol=symbol,
-                side=OrderSide.SELL if hedge_direction == "sell" else OrderSide.BUY,
-                position_side=PositionSide.SHORT if hedge_direction == "sell" else PositionSide.LONG,
-                type=OrderType.MARKET,
-                quantity=hedge_position_size,
-                price=current_price,
-                reduce_only=False
-            )
-
-            is_valid, reason = await self.risk_manager.check_risk(hedge_order)
-            if is_valid:
-                hedge_signal = {
-                    "type": hedge_direction,
-                    "entry": current_price,
-                    "stop_loss": hedge_stop_loss,
-                    "take_profit": hedge_take_profit,
-                    "strategy": f"{strategy}_hedge",
-                    "timestamp": int(datetime.now().timestamp() * 1000)
-                }
-                signals.append(hedge_signal)
-                logger.debug("Generated hedge signal for %s: type=%s, strategy=%s",
-                             symbol, hedge_direction, hedge_signal["strategy"])
-
-        return signals
+        if "direction" in signal_data:
+            risk_params = await self.risk_manager.evaluate_risk(symbol, signal_data["direction"])
+            signal_data.update(risk_params)
+            await self.event_bus.publish("signal", signal_data)
+            logger.info(f"Published signal for {symbol}: strategy={signal_data['strategy']}, direction={signal_data['direction']}, "
+                        f"volatility={volatility:.4f}")
 
     async def run(self):
-        """Chạy SignalGenerator."""
-        logger.info("SignalGenerator running")
         while True:
             await asyncio.sleep(self.settings.throttle_rate)

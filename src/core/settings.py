@@ -6,8 +6,8 @@ class Settings(BaseSettings):
     symbols: List[str] = ['BTCUSDT']
     api_key: str = "a49a6fa8cf4a82c38606625cf56bbfae4cfdd94fd45cc0b24cb30b409096257f"
     api_secret: str = "eadf55a688758a5cf382217d070e632ec12bb6bffef48653446a71521cc442b9"
-    timeframes: List[str] = ['5m']
-    base_timeframe: str = ['1m']
+    timeframes: List[str] = ['5m', '15m', '1h', '4h']  # Bao gồm 4h cho Hedging
+    base_timeframe: str = '5m'
     rsi_period: int = 14
     ema_fast_period: int = 12
     ema_slow_period: int = 26
@@ -37,12 +37,22 @@ class Settings(BaseSettings):
     max_margin_ratio: float = 0.80
     correlation_threshold: float = 0.80
     volatility_threshold: float = 0.02
-    enabled_events: List[str] = ['kline', 'order_book', 'funding_rate', 'signal', 'order']
+    enabled_events: List[str] = ['kline', 'funding_rate', 'signal', 'order']
     log_level: str = "DEBUG"
     log_directory: str = "logs"
     log_rotation_size: int = 10485760
+    grid_spacing: int = 100  # Cố định, nhưng sẽ dùng ATR động
+    profit_threshold: float = 0.25  # Ngưỡng lợi nhuận Trailing One Side
+    atr_multiplier: float = 1.5  # Hệ số ATR cho lưới
+    bb_period: int = 20  # Kỳ Bollinger Bands
+    bb_std: float = 2.0  # Độ lệch Bollinger Bands
+    backtest_mode: bool = True  # Bật/tắt backtest
+    backtest_kline_file: str = 'data/klines.json'  # Đường dẫn file kline
+    backtest_trade_file: str = 'data/aggtrades.json'  # Đường dẫn file aggTrade
 
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8"
     )
+
+
