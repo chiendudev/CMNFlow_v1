@@ -34,5 +34,9 @@ async def test():
     respose = await order_manager.send_order('BTCUSDT', order)
     assert respose is not None
 
+@pytest.mark.asyncio
+async def test_get_bracket():
+    pass
+
 if __name__ == "__main__":
     asyncio.run(test)

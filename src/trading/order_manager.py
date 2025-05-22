@@ -7,15 +7,27 @@ from src.exchange.client import ExchangeClient
 from src.trading.orders import Order
 from src.trading.enums import OrderStatus
 from src.utils.exchange_info import ExchangeInfo
-
+from src.trading.portfolio import Portfolio
+from src.utils.user_data_api import UserDataApi
 logger = logging.getLogger(__name__)
 
 class OrderManager:
-    def __init__(self, exchange: ExchangeClient, settings: Settings, exchange_info: ExchangeInfo):
+    def __init__(
+            self,
+            exchange: ExchangeClient,
+            settings: Settings,
+            exchange_info: ExchangeInfo,
+            portfolio: Portfolio,
+            user_data: UserDataApi
+    ):
         self.exchange = exchange
         self.orders: Dict[str, List[Dict]] = {}  # Lưu trữ lệnh theo symbol
         self.backtest_mode = settings.backtest_mode
         self.exchange_info = exchange_info
+        self.portfolio = portfolio
+        self.user_data = user_data
+
+    
 
 
     async def send_order(self, symbol: str, order: Order) -> Optional[Dict]:
@@ -31,10 +43,13 @@ class OrderManager:
             response = None
             if not self.backtest_mode:
                 response = await self.exchange.place_order(**params)
+            else:
+                cal_order = await self._order_response_for_test_only(order)
+                self.portfolio.apply_order(cal_order)
             self.orders[symbol].append(response or self._order_response_for_test_only(order))
             logger.info("Order %s: symbol=%s, order_id=%s", "simulated" if self.backtest_mode else "placed",
                         symbol, response.get("orderId") if response else params.get("newClientOrderId"))
-            return response or params
+            return response or self._order_response_for_test_only(order)
         except Exception as e:
             logger.error("Failed to %s order for %s: %s", "simulate" if self.backtest_mode else "place",
                          symbol, e, exc_info=True)
@@ -337,13 +352,15 @@ class OrderManager:
             logger.error("Failed to query force orders for %s: %s", symbol or "all", e, exc_info=True)
             return []
 
-    @staticmethod
-    def _order_response_for_test_only(order: Order) -> Order:
-        """ """
+
+    async def _order_response_for_test_only(self, order: Order) -> Order:
+        commission_rate = await self.user_data.fetch_user_commission_rate(order.symbol)
+        make_commission = float(commission_rate['makerCommissionRate'])
+        taker_commission = float(commission_rate['takerCommissionRate'])
         order.executed_qty = order.quantity
         order.order_id = str(uuid.uuid4())
         order.avg_price = order.price
-        fee = order.calculate_fee(is_maker=False, maker_fee=0.0002, taker_fee=0.0004)
+        order.status = OrderStatus.FILLED
+        fee = order.calculate_fee(is_maker=False, maker_fee=make_commission, taker_fee=taker_commission)
         order.fee = fee
-
         return order

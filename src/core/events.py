@@ -13,6 +13,10 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 @dataclass
+class OrderBookSnapshot:
+    pass
+
+@dataclass
 class Event:
     type: str
     symbol: str

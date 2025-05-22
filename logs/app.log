@@ -1,0 +1,3 @@
+2025-05-22 01:17:34 | root | INFO | logging_config:83 | symbol:- | timeframe:- | Logging initialized: level=DEBUG, directory=logs, rotation_size=10MB
+2025-05-22 01:17:34 | src.core.events | INFO | events:170 | symbol:- | timeframe:- | Initialized EventBus with enabled events: ['kline', 'funding_rate', 'signal', 'order']
+2025-05-22 01:17:34 | src.core.storage | INFO | storage:19 | symbol:- | timeframe:- | Initialized SQLite database at data/trading.db

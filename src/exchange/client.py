@@ -5,11 +5,11 @@ from datetime import datetime
 import logging
 from tenacity import retry, stop_after_attempt, wait_exponential
 from src.core.settings import Settings
-from src.core.events import OrderBookSnapshot
+#from src.core.events import OrderBookSnapshot
 from src.data.kline import Kline
 from src.data.trade import Trade, TradeSummary
 from src.trading.enums import KlineIntervals, OrderSide, OrderType, PositionSide
-from src.trading.orders import OCOOrder
+#from src.trading.orders import OCOOrder
 import hmac
 import hashlib
 from urllib.parse import urlencode
@@ -30,7 +30,7 @@ class IExchange(ABC):
         pass
 
     @abstractmethod
-    async def fetch_order_book(self, symbol: str, limit: int = 100) -> OrderBookSnapshot:
+    async def fetch_order_book(self, symbol: str, limit: int = 100):
         pass
 
     @abstractmethod
@@ -50,7 +50,7 @@ class IExchange(ABC):
         pass
 
     @abstractmethod
-    async def place_oco_order(self, oco_order: OCOOrder) -> Dict:
+    async def place_oco_order(self, oco_order) -> Dict:
         pass
 
     @abstractmethod
@@ -125,6 +125,30 @@ class IExchange(ABC):
     async def get_exchange_info(self) -> Dict:
         pass
 
+    @abstractmethod
+    async def get_leverage_bracket(self, symbol: str) -> Dict:
+        pass
+
+    @abstractmethod
+    async def get_commission_rate(self, symbol: str) -> Dict:
+        pass
+
+    @abstractmethod
+    async def query_symbol_config(self, symbol: str) -> Dict:
+        pass
+
+    @abstractmethod
+    async def query_order_rate_limit(self) -> Dict:
+        pass
+
+    @abstractmethod
+    async def get_current_multi_asset_mode(self) -> Dict:
+        pass
+
+    @abstractmethod
+    async def get_current_position_mode(self) -> Dict:
+        pass
+
 class ExchangeClient(IExchange):
     def __init__(self, settings: Settings):
         self.settings = settings
@@ -134,12 +158,18 @@ class ExchangeClient(IExchange):
         self.rate_limit = 2400
         self.weight_used = 0
 
-    async def _make_request(self, endpoint: str, params: Dict = None, method: str = "GET") -> Dict:
-        headers = {"X-MBX-APIKEY": self.api_key}
-        print(f'API key: {self.api_key}')
+    async def _make_request(
+            self,
+            endpoint: str,
+            params: Dict = None,
+            method: str = "GET",
+            signed: bool = False
+    ) -> Dict:
         params = params or {}
+        headers = {}
 
-        if method in ["POST", "PUT", "DELETE"]:
+        if signed:
+            headers["X-MBX-APIKEY"] = self.api_key
             params["timestamp"] = int(datetime.now().timestamp() * 1000)
             query_string = urlencode({k: v for k, v in params.items() if v is not None})
             signature = hmac.new(
@@ -150,6 +180,7 @@ class ExchangeClient(IExchange):
             params["signature"] = signature
 
         url = f"{self.base_url}{endpoint}"
+
         async with ClientSession() as session:
             try:
                 if method == "GET":
@@ -221,14 +252,10 @@ class ExchangeClient(IExchange):
         return [Trade.model_validate(item) for item in data if start_time <= item["time"] <= end_time]
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
-    async def fetch_order_book(self, symbol: str, limit: int = 100) -> OrderBookSnapshot:
+    async def fetch_order_book(self, symbol: str, limit: int = 100):
         params = {"symbol": symbol, "limit": limit}
         data = await self._make_request("/fapi/v1/depth", params)
-        return OrderBookSnapshot(
-            bids=[(float(b[0]), float(b[1])) for b in data["bids"]],
-            asks=[(float(a[0]), float(a[1])) for a in data["asks"]],
-            timestamp=data["lastUpdateId"]
-        )
+        return data
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
     async def fetch_funding_rate(self, symbol: str, start_time: str, end_time: str) -> List[Dict]:
@@ -259,11 +286,11 @@ class ExchangeClient(IExchange):
             **kwargs,
             "timestamp": int(datetime.now().timestamp() * 1000)
         }
-        data = await self._make_request("/fapi/v1/order", params, method="POST")
+        data = await self._make_request("/fapi/v1/order", params, method="POST", signed=True)
         return data
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
-    async def place_oco_order(self, oco_order: OCOOrder) -> Dict:
+    async def place_oco_order(self, oco_order) -> Dict:
         params = {
             **oco_order.to_api_params(),
             "timestamp": int(datetime.now().timestamp() * 1000)
@@ -277,7 +304,7 @@ class ExchangeClient(IExchange):
             "batchOrders": orders,
             "timestamp": int(datetime.now().timestamp() * 1000)
         }
-        data = await self._make_request("/fapi/v1/batchOrders", params, method="POST")
+        data = await self._make_request("/fapi/v1/batchOrders", params, method="POST", signed=True)
         return data
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
@@ -293,7 +320,7 @@ class ExchangeClient(IExchange):
             params["price"] = f"{new_price:.2f}"
         if new_stop_price:
             params["stopPrice"] = f"{new_stop_price:.2f}"
-        data = await self._make_request("/fapi/v1/order", params, method="PUT")
+        data = await self._make_request("/fapi/v1/order", params, method="PUT", signed=True)
         return data
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
@@ -317,7 +344,7 @@ class ExchangeClient(IExchange):
             "orderId": order_id,
             "timestamp": int(datetime.now().timestamp() * 1000)
         }
-        data = await self._make_request("/fapi/v1/orderAmendmentHistory", params)
+        data = await self._make_request("/fapi/v1/orderAmendmentHistory", params, signed=True)
         return data.get("amendments", [])
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
@@ -327,7 +354,7 @@ class ExchangeClient(IExchange):
             "orderId": order_id,
             "timestamp": int(datetime.now().timestamp() * 1000)
         }
-        data = await self._make_request("/fapi/v1/order", params, method="DELETE")
+        data = await self._make_request("/fapi/v1/order", params, method="DELETE", signed=True)
         return data
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
@@ -344,7 +371,7 @@ class ExchangeClient(IExchange):
             "symbol": symbol,
             "timestamp": int(datetime.now().timestamp() * 1000)
         }
-        data = await self._make_request("/fapi/v1/allOpenOrders", params, method="DELETE")
+        data = await self._make_request("/fapi/v1/allOpenOrders", params, method="DELETE", signed=True)
         return data
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
@@ -354,7 +381,7 @@ class ExchangeClient(IExchange):
             "limit": limit,
             "timestamp": int(datetime.now().timestamp() * 1000)
         }
-        data = await self._make_request("/fapi/v1/allOrders", params)
+        data = await self._make_request("/fapi/v1/allOrders", params, signed=True)
         return data
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
@@ -372,7 +399,7 @@ class ExchangeClient(IExchange):
             "orderId": order_id,
             "timestamp": int(datetime.now().timestamp() * 1000)
         }
-        data = await self._make_request("/fapi/v1/order", params)
+        data = await self._make_request("/fapi/v1/order", params, signed=True)
         return data if data.get("status") in ["NEW", "PARTIALLY_FILLED"] else {}
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
@@ -382,19 +409,19 @@ class ExchangeClient(IExchange):
             params["symbol"] = symbol
         if auto_close_type:
             params["autoCloseType"] = auto_close_type
-        data = await self._make_request("/fapi/v1/forceOrders", params)
+        data = await self._make_request("/fapi/v1/forceOrders", params, signed=True)
         return data
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
     async def get_balance(self) -> List[Dict]:
         params = {"timestamp": int(datetime.now().timestamp() * 1000)}
-        data = await self._make_request("/fapi/v2/balance", params)
+        data = await self._make_request("/fapi/v2/balance", params, signed=True)
         return data
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
     async def get_positions(self) -> List[Dict]:
         params = {"timestamp": int(datetime.now().timestamp() * 1000)}
-        data = await self._make_request("/fapi/v2/positionRisk", params)
+        data = await self._make_request("/fapi/v2/positionRisk", params, signed=True)
         return [p for p in data if float(p["positionAmt"]) != 0]
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
@@ -403,7 +430,7 @@ class ExchangeClient(IExchange):
             "dualSidePosition": "true" if dual_side else "false",
             "timestamp": int(datetime.now().timestamp() * 1000)
         }
-        await self._make_request("/fapi/v1/positionSide/dual", params, method="POST")
+        await self._make_request("/fapi/v1/positionSide/dual", params, method="POST", signed=True)
         logger.debug("Set position mode: dual_side=%s", dual_side)
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
@@ -413,13 +440,13 @@ class ExchangeClient(IExchange):
             "leverage": int(leverage),
             "timestamp": int(datetime.now().timestamp() * 1000)
         }
-        await self._make_request("/fapi/v1/leverage", params, method="POST")
+        await self._make_request("/fapi/v1/leverage", params, method="POST", signed=True)
         logger.debug("Set leverage for %s: %d", symbol, int(leverage))
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
     async def get_maintenance_margin_rate(self, symbol: str) -> float:
         params = {"symbol": symbol}
-        data = await self._make_request("/fapi/v1/premiumIndex", params)
+        data = await self._make_request("/fapi/v1/premiumIndex", params, signed=True)
         return float(data.get("maintenanceMarginRate", 0.01))
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
@@ -429,9 +456,49 @@ class ExchangeClient(IExchange):
             "orderId": order_id,
             "timestamp": int(datetime.now().timestamp() * 1000)
         }
-        data = await self._make_request("/fapi/v1/order", params)
+        data = await self._make_request("/fapi/v1/order", params, signed=True)
         return data
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
     async def get_exchange_info(self) -> Dict:
         return await self._make_request("/fapi/v1/exchangeInfo")
+
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
+    async def get_leverage_bracket(self, symbol: str) -> Dict:
+        params = {
+            'symbol': symbol,
+            'timestamp': int(datetime.now().timestamp() * 1000)
+        }
+        return await self._make_request('/fapi/v1/leverageBracket', params, signed=True)
+
+    async def get_commission_rate(self, symbol: str) -> Dict:
+        params = {
+            'symbol': symbol,
+            'timestamp': int(datetime.now().timestamp() * 1000)
+
+        }
+        return await self._make_request(endpoint='/fapi/v1/commissionRate', params=params, signed=True)
+
+    async def query_symbol_config(self, symbol: str):
+        params = {
+            'symbol': symbol,
+            'timestamp': int(datetime.now().timestamp() * 1000)
+        }
+        return await self._make_request(endpoint='/fapi/v1/symbolConfig', params=params, signed=True)
+
+    async def query_order_rate_limit(self) -> Dict:
+        return await self._make_request(endpoint='/fapi/v1/rateLimit/order', signed=True)
+
+    async def get_current_position_mode(self) -> Dict:
+        """
+        "dualSidePosition": true // "true": Hedge Mode; "false": One-way Mode
+        :return:
+        """
+        return await self._make_request(endpoint='/fapi/v1/multiAssetsMargin', signed=True)
+
+    async def get_current_multi_asset_mode(self) -> Dict:
+        """
+        "multiAssetsMargin": true // "true": Multi-Assets Mode; "false": Single-Asset Mode
+        :return:
+        """
+        return await self._make_request(endpoint='/fapi/v1/multiAssetsMargin', signed=True)  # // "true": Multi-Assets Mode; "false": Single-Asset Mode
