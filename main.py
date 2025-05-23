@@ -147,6 +147,7 @@ from src.trading.portfolio import Portfolio
 from src.trading.order_manager import OrderManager
 from src.utils.exchange_info import ExchangeInfo
 from src.utils.symbol_info import SymbolInfo
+from src.Account.account_info import AccountInfo
 async def main():
     # system = TradingSystem()
     # await system.run()
@@ -158,6 +159,10 @@ async def main():
     exchange_info = ExchangeInfo(client)
     await exchange_info.initial()
     user_api = UserDataApi(setting, client)
+
+    account_info = AccountInfo(setting, client)
+    await account_info.initial()
+    print(account_info.total_unrealized_profit)
 
     symbol_info = SymbolInfo(symbol='BTCUSDT')
     await symbol_info.initial_symbol_info(exchange_info, user_api)

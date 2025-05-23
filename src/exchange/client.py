@@ -149,6 +149,14 @@ class IExchange(ABC):
     async def get_current_position_mode(self) -> Dict:
         pass
 
+    @abstractmethod
+    async def get_futures_account_balance(self) -> List[Dict[str, Any]]:
+        pass
+
+    @abstractmethod
+    async def get_account_info_v3(self):
+        pass
+
 class ExchangeClient(IExchange):
     def __init__(self, settings: Settings):
         self.settings = settings
@@ -471,6 +479,7 @@ class ExchangeClient(IExchange):
         }
         return await self._make_request('/fapi/v1/leverageBracket', params, signed=True)
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
     async def get_commission_rate(self, symbol: str) -> Dict:
         params = {
             'symbol': symbol,
@@ -479,6 +488,7 @@ class ExchangeClient(IExchange):
         }
         return await self._make_request(endpoint='/fapi/v1/commissionRate', params=params, signed=True)
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
     async def query_symbol_config(self, symbol: str):
         params = {
             'symbol': symbol,
@@ -486,9 +496,11 @@ class ExchangeClient(IExchange):
         }
         return await self._make_request(endpoint='/fapi/v1/symbolConfig', params=params, signed=True)
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
     async def query_order_rate_limit(self) -> Dict:
         return await self._make_request(endpoint='/fapi/v1/rateLimit/order', signed=True)
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
     async def get_current_position_mode(self) -> Dict:
         """
         "dualSidePosition": true // "true": Hedge Mode; "false": One-way Mode
@@ -496,9 +508,26 @@ class ExchangeClient(IExchange):
         """
         return await self._make_request(endpoint='/fapi/v1/multiAssetsMargin', signed=True)
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
     async def get_current_multi_asset_mode(self) -> Dict:
         """
         "multiAssetsMargin": true // "true": Multi-Assets Mode; "false": Single-Asset Mode
         :return:
         """
         return await self._make_request(endpoint='/fapi/v1/multiAssetsMargin', signed=True)  # // "true": Multi-Assets Mode; "false": Single-Asset Mode
+
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
+    async def get_futures_account_balance(self):
+        params = {
+            'timestamp': int(datetime.now().timestamp() * 1000)
+        }
+
+        return await self._make_request(endpoint='/fapi/v3/balance', params=params, signed=True)
+
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
+    async def get_account_info_v3(self):
+        params = {
+            'timestamp': int(datetime.now().timestamp() * 1000)
+        }
+
+        return await self._make_request(endpoint='/fapi/v3/account', params=params, signed=True)
