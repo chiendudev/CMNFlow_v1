@@ -1,14 +1,12 @@
-import logging
 import asyncio
-from typing import Dict, Any, Optional
-from datetime import datetime
+from typing import Dict
 
 from src.core.settings import Settings
 from src.core.events import EventBus, SignalEvent, OrderEvent, MarkPriceEvent
 from src.core.storage import Storage
 from src.core.logging_config import get_logger, set_log_context
 from src.trading.portfolio import Portfolio
-from src.trading.risk import RiskManager
+from src.trading.risk.risk import RiskManager
 from src.trading.orders import Order, OCOOrder
 from src.trading.enums import OrderSide, PositionSide, OrderType
 

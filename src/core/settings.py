@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     trade_quantity: float = 0.001
     confluence_range_pct: float = 0.01
     ws_url: str = 'wss://fstream.binancefuture.com'
+    rest_api_url: str = 'https://testnet.binancefuture.com'
     max_risk_per_trade: float = 0.01
     trailing_stop_distance: float = 100.0
     leverage: float = 10.0
@@ -46,7 +47,7 @@ class Settings(BaseSettings):
     atr_multiplier: float = 1.5  # Hệ số ATR cho lưới
     bb_period: int = 20  # Kỳ Bollinger Bands
     bb_std: float = 2.0  # Độ lệch Bollinger Bands
-    backtest_mode: bool = True  # Bật/tắt backtest
+    backtest_mode: bool = False  # Bật/tắt backtest
     backtest_kline_file: str = 'data/klines.json'  # Đường dẫn file kline
     backtest_trade_file: str = 'data/aggtrades.json'  # Đường dẫn file aggTrade
 

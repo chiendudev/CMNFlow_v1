@@ -55,7 +55,6 @@ class SymbolInfo:
         self.taker_commission_rate: float = 0.0
         self.brackets: List[Bracket] = []
 
-
     async def initial_symbol_info(self,exchange_info: ExchangeInfo, user_api: UserDataApi):
         symbol_config = await user_api.fetch_symbol_config(self.symbol)
         symbol_info = exchange_info.symbol_info(self.symbol)
@@ -65,7 +64,6 @@ class SymbolInfo:
         self.symbol_brackets(bracket_arr)
         self.symbol_info(symbol_info)
         self.symbol_configuration(symbol_config)
-        pass
 
     def symbol_configuration(self, data: Dict[str, Any]):
         self.margin_type = MarginType.CROSSED if data['marginType'] == MarginType.CROSSED.value else MarginType.ISOLATED

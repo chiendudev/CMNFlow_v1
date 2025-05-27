@@ -157,8 +157,16 @@ class IExchange(ABC):
     async def get_account_info_v3(self):
         pass
 
+    @abstractmethod
+    async def modify_isolated_position_margin(self, symbol: str, position_side: PositionSide, amount: float, is_add: bool):
+        pass
+
+    async def ooo(self):
+        pass
+
 class ExchangeClient(IExchange):
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings, session: ClientSession):
+        self.session = session
         self.settings = settings
         self.base_url = "https://testnet.binancefuture.com"
         self.api_key = settings.api_key
@@ -189,7 +197,7 @@ class ExchangeClient(IExchange):
 
         url = f"{self.base_url}{endpoint}"
 
-        async with ClientSession() as session:
+        async with self.session as session:
             try:
                 if method == "GET":
                     async with session.get(url, params=params, headers=headers) as resp:
@@ -531,3 +539,21 @@ class ExchangeClient(IExchange):
         }
 
         return await self._make_request(endpoint='/fapi/v3/account', params=params, signed=True)
+
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
+    async def modify_isolated_position_margin(self, symbol: str, position_side: PositionSide, amount: float, is_add: bool):
+        params = {
+            'symbol': symbol,
+            'positionSide': PositionSide,
+            'amount': amount,
+            'type': 1 if is_add else 2,
+            'timestamp': int(datetime.now().timestamp() * 1000)
+        }
+        return await self._make_request(endpoint='/fapi/v1/positionMargin', params=params, signed=True)
+
+class Test(ExchangeClient):
+    def mod(self):
+        print(f"{self._make_request()}")
+
+    def ooo(self):
+        print(f"")

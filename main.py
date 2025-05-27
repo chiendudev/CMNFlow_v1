@@ -1,4 +1,5 @@
 import asyncio
+from aiohttp import ClientSession
 import logging
 import json
 from datetime import datetime, timedelta
@@ -12,7 +13,7 @@ from src.core.logging_config import get_logger, setup_logging
 from src.exchange.client import ExchangeClient
 from src.trading.enums import KlineIntervals
 from src.trading.portfolio import Portfolio
-from src.trading.risk import RiskManager
+#from src.trading.risk import RiskManager
 from src.engine import TradingEngine
 from src.strategy.signals import SignalGenerator
 from src.exchange.websocket import WebSocketClient  # Import WebSocketClient
@@ -148,25 +149,26 @@ from src.trading.order_manager import OrderManager
 from src.utils.exchange_info import ExchangeInfo
 from src.utils.symbol_info import SymbolInfo
 from src.Account.account_info import AccountInfo
+from src.exchange.rest.account_client import AccountClient
+from src.exchange.rest.trade_client import TradeClient
+from src.exchange.rest.market_client import MarketDataClient
+
+
 async def main():
     # system = TradingSystem()
     # await system.run()
     setting = Settings()
     setting.api_key = 'a49a6fa8cf4a82c38606625cf56bbfae4cfdd94fd45cc0b24cb30b409096257f'
     setting.api_secret = 'eadf55a688758a5cf382217d070e632ec12bb6bffef48653446a71521cc442b9'
-    setting.backtest_mode = True
-    client = ExchangeClient(setting)
-    exchange_info = ExchangeInfo(client)
-    await exchange_info.initial()
-    user_api = UserDataApi(setting, client)
+    setting.backtest_mode = False
+    async with ClientSession() as sessions:
+        trade_data_client = TradeClient(settings=setting, session=sessions)
+        account = AccountInfo(settings=setting, sessions=sessions)
+        symbol_info = SymbolInfo('BTCUSDT')
+        await symbol_info.initial_symbol_info(trade_data_client)
+        await account.initial()
+        print(account.assets)
 
-    account_info = AccountInfo(setting, client)
-    await account_info.initial()
-    print(account_info.total_unrealized_profit)
-
-    symbol_info = SymbolInfo(symbol='BTCUSDT')
-    await symbol_info.initial_symbol_info(exchange_info, user_api)
-    print(symbol_info.to_dict())
 
 
 

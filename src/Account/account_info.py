@@ -1,9 +1,9 @@
 from src.core.settings import Settings
-from src.exchange.client import ExchangeClient
+from src.exchange.rest.account_client import AccountClient
 from src.trading.enums import PositionSide
 from dataclasses import dataclass
 from typing import List, Dict, Any
-
+from aiohttp import ClientSession
 
 @dataclass
 class Asset:
@@ -47,11 +47,11 @@ class FutureBalance:
     update_time: int = 0
 
 class AccountInfo:
-    def __init__(self, settings: Settings, client: ExchangeClient, deposit: float = None):
+    def __init__(self, settings: Settings, sessions: ClientSession, deposit: float = None):
         self.deposit = deposit  # for testing only
 
         self.settings = settings
-        self.client = client
+        self.client = AccountClient(settings=settings, session=sessions)
         self.total_initial_margin: float = 0.0
         self.total_maint_margin: float = 0.0
         self.total_wallet_balance: float = 0.0
@@ -68,8 +68,8 @@ class AccountInfo:
         self.future_balance: Dict[str, FutureBalance] = {}
 
     async def initial(self):
-        future_balance_data = await self.client.get_futures_account_balance()
-        account_info = await self.client.get_account_info_v3()
+        future_balance_data = await self.client.get_futures_account_balance_v3()
+        account_info = await self.client.get_account_information_v3()
         self.update_from_account_data(account_info)
         self.update_future_balance(future_balance_data)
 
@@ -93,25 +93,6 @@ class AccountInfo:
                 self.future_balance[asset] = future_balance
             else:
                 self.future_balance[asset] = future_balance
-
-
-    def update_open_positions(self, positions: List[Dict[str, Any]]):
-        self.open_positions = []
-        for p in positions:
-            pos = OpenPosition(
-                symbol=p["s"],
-                position_side=PositionSide(p["ps"]),
-                position_amt=float(p["pa"]),
-                unrealized_profit=float(p["up"]),
-                isolated_margin=float(p["iw"]),
-                notional=float(p["n"]),
-                isolated_wallet=float(p["iw"]),
-                initial_margin=float(p["im"]),
-                maint_margin=float(p["mm"]),
-                update_time=p.get("updateTime", 0)
-            )
-            self.open_positions.append(pos)
-
 
     def update_from_account_data(self, data: Dict[str, Any]):
         self.total_initial_margin = float(data["totalInitialMargin"])
@@ -140,12 +121,18 @@ class AccountInfo:
             "max_withdraw_amount": float(asset["maxWithdrawAmount"]),
             "update_time": asset["updateTime"],
         }) for asset in data.get("assets", [])]
-
-
-
-
-
-
+        self.open_positions = [OpenPosition(** {
+            'symbol': pos['symbol'],
+            'position_side': pos['positionSide'],
+            'position_amt': float(pos['positionAmt']),
+            'unrealized_profit': float(pos['unrealizedProfit']),
+            'isolated_margin': float(pos['isolatedMargin']),
+            'notional': float(pos['notional']),
+            'isolated_wallet': float(pos['isolatedWallet']),
+            'initial_margin': float(pos['initialMargin']),
+            'maint_margin': float(pos['maintMargin']),
+            'update_time': int(pos['updateTime'])
+        }) for pos in data.get('positions', [])]
 
 
 

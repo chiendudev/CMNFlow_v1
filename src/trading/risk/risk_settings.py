@@ -1,0 +1,19 @@
+class RiskSettings:
+    leverage = 10.0
+    volatility_threshold = 0.02
+    funding_rate_threshold = 0.001
+    max_drawdown = 0.2  # 20%
+    max_risk_per_trade = 0.01  # 1%
+    max_concurrent_positions = 5
+    max_sector_exposure = 3
+    volume_spike_threshold = 3.0
+    max_var_threshold = 0.05
+    max_cvar_threshold = 0.07
+    max_slippage_threshold = 0.01
+    sentiment_extreme_threshold = 0.8
+    atr_multiplier = 2.0
+    sl_atr_factor = 2.0
+    tp_atr_factor = 3.0
+    taker_fee_rate = 0.0004  # 0.04%
+    max_holding_time_ms = 24 * 60 * 60 * 1000  # 24 hours
+    max_correlation_threshold = 0.7

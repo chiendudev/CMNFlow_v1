@@ -1,12 +1,11 @@
 import asyncio
 import logging
-from typing import Optional, Dict
 from collections import deque
 import numpy as np
 from src.core.events import EventBus, KlineEvent, FundingRateEvent, TradeEvent
 from src.core.settings import Settings
 from src.trading.portfolio import Portfolio
-from src.trading.risk import RiskManager
+from src.trading.risk.risk import RiskManager
 from src.core.storage import Storage
 from src.strategy.indicators import Indicators
 from src.strategy.confluence import Confluence

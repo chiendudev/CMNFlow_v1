@@ -1,7 +1,8 @@
-from src.exchange.client import ExchangeClient
+from src.exchange.rest.trade_client import TradeClient
+
 
 class ExchangeInfo:
-    def __init__(self, client: ExchangeClient):
+    def __init__(self, client: TradeClient):
         self.client = client
         self.data = {}
 
@@ -19,5 +20,4 @@ class ExchangeInfo:
     def symbol_info(self, symbol):
         if symbol not in self.data:
             raise ValueError(f"")
-        print(self.data[symbol])
         return self.data[symbol]

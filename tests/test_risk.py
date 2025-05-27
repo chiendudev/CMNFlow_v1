@@ -1,13 +1,12 @@
 import pytest
-import asyncio
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 from src.core.settings import Settings
-from src.core.events import EventBus, MarkPriceEvent
+from src.core.events import EventBus
 from src.core.storage import Storage
 from src.trading.portfolio import Portfolio, Position
-from src.trading.orders import Order, OCOOrder
-from src.trading.enums import OrderSide, PositionSide, OrderType, OrderStatus
-from src.trading.risk import RiskManager
+from src.trading.orders import Order
+from src.trading.enums import OrderSide, PositionSide, OrderType
+from src.trading.risk.risk import RiskManager
 from src.data.kline import Kline
 
 
